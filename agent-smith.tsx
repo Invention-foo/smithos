@@ -1,0 +1,29 @@
+import Image from 'next/image'
+
+export function AgentSmith({ onComplete }: { onComplete: () => void }) {
+  return (
+    <div className="bg-black min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-[300px] h-[300px] mx-auto mb-4 rounded-full border-4 border-green-500 overflow-hidden">
+          <Image
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-08zZOJj302UKh19rr0adny1ywHVRWA.png"
+            alt="Agent Smith"
+            width={300}
+            height={300}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <p className="text-green-500 font-mono text-xl mb-4">
+          "Never send a human to do an agent's job."
+        </p>
+        <button 
+          onClick={onComplete}
+          className="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-400 transition-colors"
+        >
+          Enter SmithOS
+        </button>
+      </div>
+    </div>
+  )
+}
+
