@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useWallet } from "@/hooks/use-wallet"
 import {
   Monitor,
   Folder,
@@ -13,6 +14,7 @@ import {
   Code,
   Shield,
   Search,
+  Wallet
 } from "lucide-react"
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
@@ -148,6 +150,8 @@ function MainOS({
   const [showNeuralScan, setShowNeuralScan] = useState(false)
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
+  const { connectWallet, isConnected } = useWallet()
+
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -160,6 +164,7 @@ function MainOS({
     { icon: <Search />, label: "NeuralScan", action: () => setShowNeuralScan(true) },
     { icon: <Code />, label: "CodeSeer", action: () => setShowCodeSeer(true) },
     { icon: <Shield />, label: "NeoGuard", action: () => setShowNeoGuard(true) },
+    { icon: <Wallet />, label: isConnected ? "Connected" : "Connect Wallet", action: () => connectWallet() },
   ]
 
   return (
