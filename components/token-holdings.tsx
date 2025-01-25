@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { TruncatedAddress } from './truncated-address'
+import { useWallet } from '@/hooks/use-wallet';
 
 interface Token {
   symbol: string;
@@ -11,8 +12,6 @@ interface Token {
 
 interface TokenHoldingsProps {
   onClose: () => void;
-  walletAddress: string;
-  onDisconnect: () => void;
 }
 
 const tokens: Token[] = [
@@ -22,14 +21,15 @@ const tokens: Token[] = [
   { symbol: 'LINK', name: 'Chainlink', balance: '100.00', status: 'red' },
 ];
 
-export function TokenHoldings({ onClose, walletAddress, onDisconnect }: TokenHoldingsProps) {
+export function TokenHoldings({ onClose }: TokenHoldingsProps) {
+  const { address: walletAddress = '', disconnectWallet } = useWallet()
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-green-900 border border-green-500 p-6 rounded-lg w-96">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl text-green-500">Asset Nexus</h2>
           <div>
-            <button onClick={onDisconnect} className="text-red-500 hover:text-red-400 mr-4">
+            <button onClick={disconnectWallet} className="text-red-500 hover:text-red-400 mr-4">
               Disconnect
             </button>
             <button onClick={onClose} className="text-green-500 hover:text-green-400">

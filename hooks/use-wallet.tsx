@@ -4,6 +4,7 @@ import {
   useAppKitAccount,
   useAppKitEvents,
   useWalletInfo,
+  useDisconnect
 } from "@reown/appkit/react";
 import { supabase } from "@/lib/supabase";
 
@@ -11,11 +12,16 @@ export const useWallet = () => {
   const { open } = useAppKit();
   const { address, isConnected, status } = useAppKitAccount();
   const { walletInfo } = useWalletInfo();
+  const { disconnect } = useDisconnect();
 
   const events = useAppKitEvents();
   const connectWallet = useCallback(async () => {
     open();
   }, [open]);
+
+  const disconnectWallet = useCallback(async () => {
+    disconnect();
+  }, [disconnect]);
 
   useEffect(() => {
     const saveWalletAddress = async () => {
@@ -39,5 +45,5 @@ export const useWallet = () => {
     saveWalletAddress();
   }, [events]);
 
-  return { connectWallet, isConnected, address, status };
+  return { connectWallet, disconnectWallet, isConnected, address, status };
 };
