@@ -32,7 +32,7 @@ import { NeoGuard } from "./components/neo-guard"
 export default function MatrixOS() {
   const [bootState, setBootState] = useState<
     "booting" | "agent-smith" | "matrix-rain" | "os" | "shutdown" | "powered-off"
-  >("matrix-rain")
+  >("booting")
   const [osOpacity, setOsOpacity] = useState(0)
   const [isMatrixRainFadingOut, setIsMatrixRainFadingOut] = useState(false)
   const matrixRainRef = useRef<MatrixRainRef>(null)
