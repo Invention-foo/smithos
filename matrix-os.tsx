@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useWallet } from "@/hooks/use-wallet"
 import {
   Monitor,
   Folder,
@@ -27,7 +28,6 @@ import { NeuralScan } from "./components/neural-scan"
 import { CodeSeer } from "./components/code-seer"
 import { NeoGuard } from "./components/neo-guard"
 
-const PLACEHOLDER_WALLET = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
 
 export default function MatrixOS() {
   const [bootState, setBootState] = useState<
@@ -36,10 +36,6 @@ export default function MatrixOS() {
   const [osOpacity, setOsOpacity] = useState(0)
   const [isMatrixRainFadingOut, setIsMatrixRainFadingOut] = useState(false)
   const matrixRainRef = useRef<MatrixRainRef>(null)
-  const [showDashboard, setShowDashboard] = useState(false)
-  const [isWalletConnected, setIsWalletConnected] = useState(false)
-  const [showTokenInsight, setShowTokenInsight] = useState(false)
-  const [showNeuralScan, setShowNeuralScan] = useState(false)
 
   useEffect(() => {
     if (bootState === "matrix-rain") {
@@ -90,19 +86,6 @@ export default function MatrixOS() {
     }, 50)
   }
 
-  const handleConnect = () => {
-    setIsWalletConnected(true)
-    // In a real application, this would trigger a wallet connection process
-    console.log("Connecting wallet...")
-  }
-
-  const handleDisconnect = () => {
-    setIsWalletConnected(false)
-    setShowTokenHoldings(false)
-    // In a real application, this would trigger a wallet disconnection process
-    console.log("Disconnecting wallet...")
-  }
-
   return (
     <div className="bg-black min-h-screen">
       {bootState === "booting" && <BootSequence onComplete={() => setBootState("agent-smith")} />}
@@ -112,9 +95,6 @@ export default function MatrixOS() {
         <MainOS
           opacity={osOpacity}
           onShutdown={handleShutdown}
-          isWalletConnected={isWalletConnected}
-          onConnect={handleConnect}
-          onDisconnect={handleDisconnect}
         />
       )}
       {bootState === "shutdown" && <ShutdownEffect onComplete={handleShutdownComplete} />}
@@ -126,15 +106,9 @@ export default function MatrixOS() {
 function MainOS({
   opacity,
   onShutdown,
-  isWalletConnected,
-  onConnect,
-  onDisconnect,
 }: {
   opacity: number
   onShutdown: () => void
-  isWalletConnected: boolean
-  onConnect: () => void
-  onDisconnect: () => void
 }) {
   const [time, setTime] = useState(new Date())
   const [showStartMenu, setShowStartMenu] = useState(false)
@@ -148,6 +122,8 @@ function MainOS({
   const [showNeuralScan, setShowNeuralScan] = useState(false)
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
+  const { connectWallet, isConnected: isWalletConnected, address } = useWallet()
+
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -201,11 +177,11 @@ function MainOS({
           <div className="flex items-center space-x-4">
             <button
               className="flex items-center space-x-2 text-green-300 text-sm hover:text-green-100 transition-colors"
-              onClick={() => (isWalletConnected ? setShowTokenHoldings(true) : onConnect())}
+              onClick={() => (isWalletConnected ? setShowTokenHoldings(true) : connectWallet())}
             >
               <span>SSH:</span>
               {isWalletConnected ? (
-                <span>{`${PLACEHOLDER_WALLET.slice(0, 6)}....${PLACEHOLDER_WALLET.slice(-4)}`}</span>
+                <span>{`${address?.slice(0, 6)}....${address?.slice(-4)}`}</span>
               ) : (
                 <span className="text-yellow-500">Disconnected</span>
               )}
@@ -278,8 +254,6 @@ function MainOS({
         {showTokenHoldings && isWalletConnected && (
           <TokenHoldings
             onClose={() => setShowTokenHoldings(false)}
-            walletAddress={PLACEHOLDER_WALLET}
-            onDisconnect={onDisconnect}
           />
         )}
         {showDashboard && <Dashboard onClose={() => setShowDashboard(false)} />}
