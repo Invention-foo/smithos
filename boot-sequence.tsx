@@ -5,14 +5,14 @@ export function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [currentLine, setCurrentLine] = useState(0)
 
   const bootLines = [
-    "Initializing Matrix OS v1.0...",
+    "Initializing SmithOS v1.0...",
     "Loading core systems...",
-    "Establishing connection to the Matrix...",
+    "Establishing connection to RPC node...",
     "Bypassing firewalls...",
     "Decrypting neural interfaces...",
     "Compiling reality distortion fields...",
     "Synchronizing with the Source...",
-    "Matrix OS boot sequence complete."
+    "SmithOS boot sequence complete."
   ]
 
   useEffect(() => {

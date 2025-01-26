@@ -89,7 +89,15 @@ export default function MatrixOS() {
   return (
     <div className="bg-black min-h-screen">
       {bootState === "booting" && <BootSequence onComplete={() => setBootState("agent-smith")} />}
-      {bootState === "agent-smith" && <AgentSmith onComplete={() => setBootState("matrix-rain")} />}
+      {bootState === "agent-smith" && (
+        <AgentSmith 
+          onComplete={() => setBootState("matrix-rain")} 
+          onSkip={() => {
+            setBootState("os")
+            fadeInOS()
+          }} 
+        />
+      )}
       {bootState === "matrix-rain" && <MatrixRain ref={matrixRainRef} isFadingOut={isMatrixRainFadingOut} />}
       {bootState === "os" && (
         <MainOS
@@ -162,8 +170,16 @@ function MainOS({
 
         {/* Bottom Icons */}
         <div className="fixed bottom-14 right-0 flex space-x-4 p-2 mr-4">
-          <DesktopIcon icon={<MessageCircle />} label="Telegram" />
-          <DesktopIcon icon={<Twitter />} label="Twitter" />
+          <DesktopIcon 
+            icon={<MessageCircle />} 
+            label="Telegram" 
+            onClick={() => window.open('https://t.me/SmithDotSol', '_blank')}
+          />
+          <DesktopIcon 
+            icon={<Twitter />} 
+            label="Twitter" 
+            onClick={() => window.open('https://x.com/SmithDotSol', '_blank')}
+          />
         </div>
 
         {/* Taskbar */}
@@ -183,7 +199,7 @@ function MainOS({
               {isWalletConnected ? (
                 <span>{`${address?.slice(0, 6)}....${address?.slice(-4)}`}</span>
               ) : (
-                <span className="text-yellow-500">Disconnected</span>
+                <span className="text-yellow-500">Connect Wallet</span>
               )}
             </button>
             <div className="flex items-center space-x-2">

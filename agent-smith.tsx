@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-export function AgentSmith({ onComplete }: { onComplete: () => void }) {
+export function AgentSmith({ onComplete, onSkip }: { onComplete: () => void, onSkip: () => void }) {
   return (
     <div className="bg-black min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -16,12 +16,20 @@ export function AgentSmith({ onComplete }: { onComplete: () => void }) {
         <p className="text-green-500 font-mono text-xl mb-4">
           "Never send a human to do an agent's job."
         </p>
-        <button 
-          onClick={onComplete}
-          className="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-400 transition-colors"
-        >
-          Enter SmithOS
-        </button>
+        <div className="flex flex-col items-center space-y-2">
+          <button 
+            onClick={onComplete}
+            className="bg-green-500 text-black px-4 py-2 rounded hover:bg-green-400 transition-colors"
+          >
+            Enter SmithOS
+          </button>
+          <button
+            onClick={onSkip}
+            className="text-green-500 hover:text-green-400 transition-colors text-sm"
+          >
+            Skip Effect
+          </button>
+        </div>
       </div>
     </div>
   )
