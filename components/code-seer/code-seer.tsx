@@ -9,6 +9,7 @@ import { MaliciousPatterns } from './components/malicious-patterns';
 import { Tokenomics } from './components/tokenomics';
 import { AuditResults } from '@/types/audit';
 import { auditToken } from './actions';
+import { LoadingScreen } from './components/loading-screen';
 
 interface CodeSeerProps {
   onClose: () => void;
@@ -118,17 +119,21 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
           </div>
         )}
 
-        {auditResults && (
-          <div className="space-y-6">
-            <RiskAssessment 
-              data={auditResults.riskAssessment}
-              codeAudit={auditResults.codeAudit}
-              maliciousPatterns={auditResults.maliciousPatterns}
-            />
-            <CodeAudit data={auditResults.codeAudit} />
-            <MaliciousPatterns data={auditResults.maliciousPatterns} />
-            <Tokenomics data={auditResults.tokenomics} />
-          </div>
+        {isLoading ? (
+          <LoadingScreen />
+        ) : (
+          auditResults && (
+            <div className="space-y-6">
+              <RiskAssessment 
+                data={auditResults.riskAssessment}
+                codeAudit={auditResults.codeAudit}
+                maliciousPatterns={auditResults.maliciousPatterns}
+              />
+              <CodeAudit data={auditResults.codeAudit} />
+              <MaliciousPatterns data={auditResults.maliciousPatterns} />
+              <Tokenomics data={auditResults.tokenomics} />
+            </div>
+          )
         )}
       </div>
     </div>
