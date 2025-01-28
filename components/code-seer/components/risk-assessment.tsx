@@ -1,25 +1,10 @@
 import { AlertTriangle } from 'lucide-react';
+import { RiskAssessmentData, Vulnerability, MaliciousPattern } from '@/types/audit';
 
 interface RiskAssessmentProps {
-  data: {
-    summary: string;
-    commonality: {
-      description: string;
-      riskImplications: string;
-    };
-    maliciousPotential: {
-      description: string;
-      investorImpact: string;
-    };
-  };
-  codeAudit: Array<{
-    severity: string;
-    description: string;
-  }>;
-  maliciousPatterns: Array<{
-    detected: boolean;
-    name: string;
-  }>;
+  data: RiskAssessmentData;
+  codeAudit: Vulnerability[];
+  maliciousPatterns: MaliciousPattern[];
 }
 
 export function RiskAssessment({ data, codeAudit, maliciousPatterns }: RiskAssessmentProps) {
@@ -60,7 +45,7 @@ export function RiskAssessment({ data, codeAudit, maliciousPatterns }: RiskAsses
           <div className="p-2 bg-green-900/50 rounded">
             <p className="text-red-400 font-semibold">Malicious</p>
             <p className="text-2xl text-red-400">
-              {maliciousPatterns.filter(pattern => pattern.detected).length}
+              {maliciousPatterns.length}
             </p>
           </div>
         </div>
@@ -69,7 +54,7 @@ export function RiskAssessment({ data, codeAudit, maliciousPatterns }: RiskAsses
           <div className="text-sm text-green-300">
             <p className="font-semibold">Risk Profile:</p>
             <p>{data.commonality.description}</p>
-            <p className="mt-1">{data.maliciousPotential.description}</p>
+            <p className="mt-1">{data.overallRisk}</p>
           </div>
         </div>
       </div>

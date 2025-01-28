@@ -97,8 +97,6 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
             >
               <option value="">Select blockchain</option>
               <option value="ethereum">Ethereum</option>
-              <option value="binance">Binance Smart Chain</option>
-              <option value="polygon">Polygon</option>
             </select>
             <button
               type="submit"
