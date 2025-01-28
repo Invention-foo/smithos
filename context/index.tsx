@@ -1,9 +1,8 @@
 'use client'
 
-import { wagmiAdapter, projectId } from '@/config'
+import { wagmiAdapter, projectId, solanaAdapter, networks } from '@/config'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createAppKit } from '@reown/appkit/react' 
-import { mainnet, arbitrum, avalanche, base, optimism, polygon, solana } from '@reown/appkit/networks'
 import React, { type ReactNode } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 
@@ -20,11 +19,11 @@ const metadata = {
   icons: ['https://assets.reown.com/reown-profile-pic.png']
 }
 
-const modal = createAppKit({
-  adapters: [wagmiAdapter],
+createAppKit({
+  adapters: [wagmiAdapter, solanaAdapter],
   projectId,
-  networks: [mainnet, arbitrum, avalanche, base, optimism, polygon, solana],
-  defaultNetwork: mainnet,
+  networks,
+  defaultNetwork: networks[0],
   metadata: metadata,
   features: {
     analytics: true, 
@@ -39,7 +38,7 @@ function ContextProvider({ children, cookies }: { children: ReactNode; cookies: 
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </WagmiProvider>
-  )
+  );
 }
 
 export default ContextProvider
