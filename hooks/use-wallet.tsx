@@ -43,7 +43,7 @@ export const useWallet = () => {
     };
 
     saveWalletAddress();
-  }, [events]);
+  }, [events, address, walletInfo?.name]);
 
   return { connectWallet, disconnectWallet, isConnected, address, status };
 };
