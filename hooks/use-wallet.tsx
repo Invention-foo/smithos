@@ -7,12 +7,14 @@ import {
   useDisconnect
 } from "@reown/appkit/react";
 import { supabase } from "@/lib/supabase";
+import { useTokenHoldings } from "./use-token-holdings";
 
 export const useWallet = () => {
   const { open } = useAppKit();
   const { address, isConnected, status } = useAppKitAccount();
   const { walletInfo } = useWalletInfo();
   const { disconnect } = useDisconnect();
+  const { clearTokenHoldings } = useTokenHoldings();
 
   const events = useAppKitEvents();
   const connectWallet = useCallback(async () => {
@@ -20,6 +22,7 @@ export const useWallet = () => {
   }, [open]);
 
   const disconnectWallet = useCallback(async () => {
+    clearTokenHoldings();
     disconnect();
   }, [disconnect]);
 
