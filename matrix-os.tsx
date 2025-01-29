@@ -25,7 +25,7 @@ import { DocumentsModal } from "./components/documents-modal"
 import { TokenHoldings } from "./components/token-holdings"
 import { Dashboard } from "./components/dashboard"
 import { NeuralScan } from "./components/neural-scan"
-import { CodeSeer } from "./components/code-seer"
+import { CodeSeer } from "@/components/code-seer"
 import { NeoGuard } from "./components/neo-guard"
 
 
