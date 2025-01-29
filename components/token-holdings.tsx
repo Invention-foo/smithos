@@ -1,9 +1,9 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import { TruncatedAddress } from './truncated-address'
 import { useWallet } from '@/hooks/use-wallet';
 import { useTokenHoldings, Token } from '@/hooks/use-token-holdings';
-import { useAppKitAccount } from '@reown/appkit/react';
+import { useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
 
 interface TokenHoldingsProps {
   onClose: () => void;
@@ -13,6 +13,43 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
   const { disconnectWallet } = useWallet();
   const { address } = useAppKitAccount();
   const { tokens, isLoading, error } = useTokenHoldings();
+  const { caipNetworkId } = useAppKitNetwork();
+  const [showHidden, setShowHidden] = useState(false);
+
+  const isEthereum = caipNetworkId?.startsWith('eip155');
+  const isSolana = caipNetworkId?.startsWith('solana');
+
+  const visibleTokens = tokens.filter(token => !token.hide);
+  const hiddenTokens = tokens.filter(token => token.hide);
+
+  const TokenCard = ({ token }: { token: Token }) => (
+    <div 
+      className={`p-4 rounded-lg bg-green-800/60 
+        flex justify-between items-center hover:bg-opacity-80 transition-colors duration-200 hover:shadow-lg`}
+    >
+      <div className="flex items-center">
+        <div>
+          <p className="font-bold text-green-100">{token.symbol}</p>
+          <p className="text-sm text-green-300/90">{token.name}</p>
+          {isEthereum && token.usdPrice && (
+            <p className="text-xs text-green-400/90 mt-0.5">
+              ${token.usdPrice.toFixed(2)} 
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="text-right">
+        {isEthereum && token.usdValue && (
+          <p className="text-sm text-green-300/90">${token.usdValue.toFixed(2)}</p>
+        )}
+        {isSolana ? (
+          <p className="text-lg font-medium">{Number(token.balanceFormatted)} SOL</p>
+        ) : (
+          <p className="text-lg font-medium">{Number(token.balanceFormatted).toFixed(2)}</p>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
@@ -53,36 +90,40 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
             <div className="flex justify-center py-8">
               <p className="text-red-400">Error loading tokens</p>
             </div>
-          ) : tokens.map((token) => (
-            <div 
-              key={token.symbol} 
-              className={`p-4 rounded-lg ${token.isNative ? 'bg-green-700/60' : 'bg-green-800/60'} 
-                flex justify-between items-center hover:bg-opacity-80 transition-colors duration-200 hover:shadow-lg`}
-            >
-              <div className="flex items-center">
-                <div 
-                  className={`w-2.5 h-2.5 rounded-full mr-3 ${
-                    token.status === 'green' ? 'bg-green-400' : 'bg-red-400'
-                  }`}
-                />
-                <div>
-                  <p className="font-bold text-green-100">{token.symbol}</p>
-                  <p className="text-sm text-green-300/90">{token.name}</p>
-                  <p className="text-xs text-green-400/90 mt-0.5">
-                    ${token.usdPrice.toFixed(2)} 
-                    <span className={token.priceChange24h >= 0 ? 'text-green-400' : 'text-red-400'}>
-                      ({token.priceChange24h.toFixed(2)}%)
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-medium">{token.balanceFormatted}</p>
-                <p className="text-sm text-green-300/90">${token.usdValue.toFixed(2)}</p>
-                <p className="text-xs text-green-400/90 mt-0.5">{token.portfolioPercentage.toFixed(2)}% of portfolio</p>
-              </div>
+          ) : tokens.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-green-300 mb-2">No tokens found in this wallet</p>
+              <p className="text-green-400/70 text-sm">
+                {isEthereum ? "Try adding some ERC20 tokens" : isSolana ? "Try adding some SPL tokens" : "Connect a wallet to view tokens"}
+              </p>
             </div>
-          ))}
+          ) : (
+            <>
+              {visibleTokens.map((token, index) => (
+                <TokenCard key={index} token={token} />
+              ))}
+              
+              {hiddenTokens.length > 0 && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowHidden(!showHidden)}
+                    className="flex items-center gap-2 text-green-400 hover:text-green-300 transition-colors duration-200 w-full justify-between p-2 rounded-lg bg-green-800/30"
+                  >
+                    <span>{showHidden ? 'Hide' : 'Show'} Small Balance Tokens ({hiddenTokens.length})</span>
+                    {showHidden ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
+                  
+                  {showHidden && (
+                    <div className="mt-3 space-y-3">
+                      {hiddenTokens.map((token, index) => (
+                        <TokenCard key={index} token={token} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
