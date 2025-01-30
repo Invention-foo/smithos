@@ -4,6 +4,7 @@ import JSON5 from 'json5'
 import { AuditResults } from '@/types/audit'
 
 interface AuditResult {
+  isScam: boolean;
   codeAudit: {
     vulnerabilities: Array<{
       type: string
@@ -93,7 +94,7 @@ function isValidAuditResult(result: any): result is AuditResult {
 }
 
 interface GeminiAuditResponse {
-  auditResult: AuditResults;
+  auditResult: AuditResult;
   rawJson: Json;  // For Supabase storage
 }
 
@@ -137,8 +138,19 @@ export async function performContractAudit(sourceCode: string): Promise<GeminiAu
         throw new Error('Invalid audit result structure')
       }
 
+      // Add post-processing for isScam
+      let isScam = false;
+      for (const maliciousItem of parsedResponse.maliciousCodeDetection.malicious_code) {
+        if (!maliciousItem.resolution.toLowerCase().includes("renounc") && 
+            !maliciousItem.resolution.toLowerCase().includes("alternative equally effective mitigation")) {
+          isScam = true;
+          break;
+        }
+      }
+      parsedResponse.isScam = isScam;
+
       return {
-        auditResult: parsedResponse as AuditResults,
+        auditResult: parsedResponse,
         rawJson: parsedResponse as unknown as Json
       }
 
