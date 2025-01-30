@@ -1,70 +1,144 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import { TruncatedAddress } from './truncated-address'
-import { useWallet } from '@/hooks/use-wallet';
-
-interface Token {
-  symbol: string;
-  name: string;
-  balance: string;
-  status: 'green' | 'yellow' | 'red';
-}
+import React, { useState } from "react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { TruncatedAddress } from "./truncated-address";
+import { useWallet } from "@/hooks/use-wallet";
+import { useTokenHoldings, Token } from "@/hooks/use-token-holdings";
+import { useAppKitAccount } from "@reown/appkit/react";
 
 interface TokenHoldingsProps {
   onClose: () => void;
 }
 
-const tokens: Token[] = [
-  { symbol: 'SMITH', name: 'Agent Smith', balance: '1000.00', status: 'green' },
-  { symbol: 'ETH', name: 'Ethereum', balance: '5.5', status: 'green' },
-  { symbol: 'USDC', name: 'USD Coin', balance: '2500.00', status: 'yellow' },
-  { symbol: 'LINK', name: 'Chainlink', balance: '100.00', status: 'red' },
-];
+const MAX_TOKENS_VISIBLE = 5;
 
 export function TokenHoldings({ onClose }: TokenHoldingsProps) {
-  const { address: walletAddress = '', disconnectWallet } = useWallet()
+  const { disconnectWallet } = useWallet();
+  const { address } = useAppKitAccount();
+  const { tokens, isLoading, error } = useTokenHoldings();
+  const [showMore, setShowMore] = useState(false);
+
+  const visibleTokens = tokens.slice(0, MAX_TOKENS_VISIBLE);
+  const hiddenTokens = tokens.slice(MAX_TOKENS_VISIBLE);
+
+  const TokenCard = ({ token }: { token: Token }) => (
+    <div
+      className={`p-4 rounded-lg bg-green-800/60 
+        flex justify-between items-center hover:bg-opacity-80 transition-colors duration-200 hover:shadow-lg`}
+    >
+      <div className="flex items-center">
+        <div>
+          <p className="font-bold text-green-100">{token.symbol}</p>
+          <p className="text-sm text-green-300/90">{token.name}</p>
+          {token.usdPrice && (
+            <p className="text-xs text-green-400/90 mt-0.5">
+              $
+              {token.usdPrice < 0.001
+                ? token.usdPrice.toExponential(3)
+                : token.usdPrice.toFixed(3)}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="text-right">
+        {token.usdValue && (
+          <p className="text-sm text-green-300/90">
+            ${token.usdValue.toFixed(2)}
+          </p>
+        )}
+        <p className="text-lg font-medium">
+          {Number(token.balanceFormatted).toFixed(2)}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-green-900 border border-green-500 p-6 rounded-lg w-96">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl text-green-500">Asset Nexus</h2>
-          <div>
-            <button onClick={disconnectWallet} className="text-red-500 hover:text-red-400 mr-4">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-green-900/90 border border-green-500 p-8 rounded-xl w-[32rem] max-h-[85vh] flex flex-col shadow-xl">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-green-400">Asset Nexus</h2>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={disconnectWallet}
+              className="text-red-400 hover:text-red-300 transition-colors duration-200 text-sm font-medium"
+            >
               Disconnect
             </button>
-            <button onClick={onClose} className="text-green-500 hover:text-green-400">
-              <X size={24} />
+            <button
+              onClick={onClose}
+              className="text-green-500 hover:text-green-400 transition-colors duration-200"
+            >
+              <X size={20} />
             </button>
           </div>
         </div>
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-green-300 text-sm">Decentralized ID:</span>
-          <TruncatedAddress address={walletAddress} />
+        <div className="mb-6 flex items-center justify-between bg-green-800/50 p-3 rounded-lg">
+          <span className="text-green-300 text-sm font-medium">
+            Decentralized ID:
+          </span>
+          <TruncatedAddress address={address || ""} />
         </div>
-        <div className="space-y-2">
-          {tokens.map((token) => (
-            <div 
-              key={token.symbol} 
-              className={`p-2 rounded ${token.symbol === 'SMITH' ? 'bg-green-700' : 'bg-green-800'} flex justify-between items-center`}
-            >
-              <div className="flex items-center">
-                <div 
-                  className={`w-3 h-3 rounded-full mr-2 ${
-                    token.status === 'green' ? 'bg-green-400' : 
-                    token.status === 'yellow' ? 'bg-yellow-400' : 'bg-red-400'
-                  }`}
-                />
-                <div>
-                  <p className="font-bold">{token.symbol}</p>
-                  <p className="text-sm text-green-300">{token.name}</p>
-                </div>
-              </div>
-              <p className="text-lg">{token.balance}</p>
+        <div
+          className="space-y-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-track-green-900 scrollbar-thumb-green-700 hover:scrollbar-thumb-green-600"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#047857 #064e3b",
+          }}
+        >
+          {isLoading ? (
+            <div className="flex justify-center py-8">
+              <p className="text-green-300">Loading tokens...</p>
             </div>
-          ))}
+          ) : error ? (
+            <div className="flex justify-center py-8">
+              <p className="text-red-400">Error loading tokens</p>
+            </div>
+          ) : tokens.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-green-300 mb-2">
+                No tokens found in this wallet
+              </p>
+              <p className="text-green-400/70 text-sm">
+                Connect a wallet to view tokens
+              </p>
+            </div>
+          ) : (
+            <>
+              {visibleTokens.map((token, index) => (
+                <TokenCard key={index} token={token} />
+              ))}
+
+              {hiddenTokens.length > 0 && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowMore(!showMore)}
+                    className="flex items-center gap-2 text-green-400 hover:text-green-300 transition-colors duration-200 w-full justify-between p-2 rounded-lg bg-green-800/30"
+                  >
+                    <span>
+                      {showMore
+                        ? "Show Less"
+                        : `Show More Tokens (${hiddenTokens.length})`}
+                    </span>
+                    {showMore ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
+                  </button>
+
+                  {showMore && (
+                    <div className="mt-3 space-y-3">
+                      {hiddenTokens.map((token, index) => (
+                        <TokenCard key={index} token={token} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
