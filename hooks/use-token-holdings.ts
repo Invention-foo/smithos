@@ -18,7 +18,6 @@ export interface Token {
   balanceFormatted: string;
   usdPrice?: number;
   usdValue?: number;
-  hide?: boolean;
 }
 
 export function useTokenHoldings() {
@@ -63,7 +62,7 @@ export function useTokenHoldings() {
               maxTokenInactivity: 30,
             });
 
-          formattedTokens = response.result.filter(token => Number(token.usdValue) > 50).map(
+          formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
             (token): Token => ({
               symbol: token.symbol || "Unknown",
               name: token.name || "Unknown Token",
@@ -71,7 +70,6 @@ export function useTokenHoldings() {
               balanceFormatted: token.balanceFormatted,
               usdPrice: Number(token.usdPrice),
               usdValue: Number(token.usdValue),
-              hide: Number(token.usdValue) < 10000,
             })
           ).sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
         } else if (caipNetworkId.startsWith("solana")) {
@@ -79,18 +77,28 @@ export function useTokenHoldings() {
             address: address,
             network: "mainnet",
           });
-
-          formattedTokens = response.result.filter(token => Number(token.amount.solana) > 0.00000001).map(
-            (token): Token => ({
-              symbol: token.symbol || "Unknown",
-              name: token.name || "Unknown Token",
-              balance: token.amount.lamports?.toString(),
-              balanceFormatted: token.amount.solana?.toString(),
-              usdPrice: undefined,
-              usdValue: undefined,
-              hide: Number(token.amount.solana) < 0.001,
+          
+          // Fetch SOL price in USD
+          const solPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+          const solPriceData = await solPriceResponse.json();
+          const solUsdPrice = solPriceData.solana.usd;
+          
+          formattedTokens = response.result
+            .map((token): Token => {
+              const balance = Number(token.amount.solana);
+              const usdValue = balance * solUsdPrice;
+              
+              return {
+                symbol: token.symbol || "Unknown",
+                name: token.name || "Unknown Token",
+                balance: token.amount.lamports?.toString(),
+                balanceFormatted: token.amount.solana?.toString(),
+                usdPrice: solUsdPrice,
+                usdValue: usdValue
+              };
             })
-          ).sort((a, b) => Number(b.balanceFormatted) - Number(a.balanceFormatted));
+            .filter(token => (token.usdValue ?? 0) > 0.001) 
+            .sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0));
         }
 
         // Store tokens with timestamp
