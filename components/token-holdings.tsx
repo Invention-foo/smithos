@@ -1,29 +1,27 @@
-import React, { useState } from 'react';
-import { X, ChevronDown, ChevronUp } from 'lucide-react';
-import { TruncatedAddress } from './truncated-address'
-import { useWallet } from '@/hooks/use-wallet';
-import { useTokenHoldings, Token } from '@/hooks/use-token-holdings';
-import { useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react';
+import React, { useState } from "react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
+import { TruncatedAddress } from "./truncated-address";
+import { useWallet } from "@/hooks/use-wallet";
+import { useTokenHoldings, Token } from "@/hooks/use-token-holdings";
+import { useAppKitAccount } from "@reown/appkit/react";
 
 interface TokenHoldingsProps {
   onClose: () => void;
 }
 
+const MAX_TOKENS_VISIBLE = 5;
+
 export function TokenHoldings({ onClose }: TokenHoldingsProps) {
   const { disconnectWallet } = useWallet();
   const { address } = useAppKitAccount();
   const { tokens, isLoading, error } = useTokenHoldings();
-  const { caipNetworkId } = useAppKitNetwork();
-  const [showHidden, setShowHidden] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
-  const isEthereum = caipNetworkId?.startsWith('eip155');
-  const isSolana = caipNetworkId?.startsWith('solana');
-
-  const visibleTokens = tokens.filter(token => !token.hide);
-  const hiddenTokens = tokens.filter(token => token.hide);
+  const visibleTokens = tokens.slice(0, MAX_TOKENS_VISIBLE);
+  const hiddenTokens = tokens.slice(MAX_TOKENS_VISIBLE);
 
   const TokenCard = ({ token }: { token: Token }) => (
-    <div 
+    <div
       className={`p-4 rounded-lg bg-green-800/60 
         flex justify-between items-center hover:bg-opacity-80 transition-colors duration-200 hover:shadow-lg`}
     >
@@ -31,22 +29,25 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
         <div>
           <p className="font-bold text-green-100">{token.symbol}</p>
           <p className="text-sm text-green-300/90">{token.name}</p>
-          {isEthereum && token.usdPrice && (
+          {token.usdPrice && (
             <p className="text-xs text-green-400/90 mt-0.5">
-              ${token.usdPrice.toFixed(2)} 
+              $
+              {token.usdPrice < 0.001
+                ? token.usdPrice.toExponential(3)
+                : token.usdPrice.toFixed(3)}
             </p>
           )}
         </div>
       </div>
       <div className="text-right">
-        {isEthereum && token.usdValue && (
-          <p className="text-sm text-green-300/90">${token.usdValue.toFixed(2)}</p>
+        {token.usdValue && (
+          <p className="text-sm text-green-300/90">
+            ${token.usdValue.toFixed(2)}
+          </p>
         )}
-        {isSolana ? (
-          <p className="text-lg font-medium">{Number(token.balanceFormatted)} SOL</p>
-        ) : (
-          <p className="text-lg font-medium">{Number(token.balanceFormatted).toFixed(2)}</p>
-        )}
+        <p className="text-lg font-medium">
+          {Number(token.balanceFormatted).toFixed(2)}
+        </p>
       </div>
     </div>
   );
@@ -57,14 +58,14 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-green-400">Asset Nexus</h2>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={disconnectWallet} 
+            <button
+              onClick={disconnectWallet}
               className="text-red-400 hover:text-red-300 transition-colors duration-200 text-sm font-medium"
             >
               Disconnect
             </button>
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="text-green-500 hover:text-green-400 transition-colors duration-200"
             >
               <X size={20} />
@@ -72,14 +73,16 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
           </div>
         </div>
         <div className="mb-6 flex items-center justify-between bg-green-800/50 p-3 rounded-lg">
-          <span className="text-green-300 text-sm font-medium">Decentralized ID:</span>
+          <span className="text-green-300 text-sm font-medium">
+            Decentralized ID:
+          </span>
           <TruncatedAddress address={address || ""} />
         </div>
-        <div 
+        <div
           className="space-y-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-track-green-900 scrollbar-thumb-green-700 hover:scrollbar-thumb-green-600"
           style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#047857 #064e3b'
+            scrollbarWidth: "thin",
+            scrollbarColor: "#047857 #064e3b",
           }}
         >
           {isLoading ? (
@@ -92,9 +95,11 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
             </div>
           ) : tokens.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-green-300 mb-2">No tokens found in this wallet</p>
+              <p className="text-green-300 mb-2">
+                No tokens found in this wallet
+              </p>
               <p className="text-green-400/70 text-sm">
-                {isEthereum ? "Try adding some ERC20 tokens" : isSolana ? "Try adding some SPL tokens" : "Connect a wallet to view tokens"}
+                Connect a wallet to view tokens
               </p>
             </div>
           ) : (
@@ -102,18 +107,26 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
               {visibleTokens.map((token, index) => (
                 <TokenCard key={index} token={token} />
               ))}
-              
+
               {hiddenTokens.length > 0 && (
                 <div className="mt-4">
                   <button
-                    onClick={() => setShowHidden(!showHidden)}
+                    onClick={() => setShowMore(!showMore)}
                     className="flex items-center gap-2 text-green-400 hover:text-green-300 transition-colors duration-200 w-full justify-between p-2 rounded-lg bg-green-800/30"
                   >
-                    <span>{showHidden ? 'Hide' : 'Show'} Small Balance Tokens ({hiddenTokens.length})</span>
-                    {showHidden ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    <span>
+                      {showMore
+                        ? "Show Less"
+                        : `Show More Tokens (${hiddenTokens.length})`}
+                    </span>
+                    {showMore ? (
+                      <ChevronUp size={20} />
+                    ) : (
+                      <ChevronDown size={20} />
+                    )}
                   </button>
-                  
-                  {showHidden && (
+
+                  {showMore && (
                     <div className="mt-3 space-y-3">
                       {hiddenTokens.map((token, index) => (
                         <TokenCard key={index} token={token} />
