@@ -141,7 +141,7 @@ export async function performContractAudit(sourceCode: string): Promise<GeminiAu
       // Add post-processing for isScam
       let isScam = false;
       for (const maliciousItem of parsedResponse.maliciousCodeDetection.malicious_code) {
-        if (!maliciousItem.resolution.toLowerCase().includes("renouncing ownership") && 
+        if (!maliciousItem.resolution.toLowerCase().includes("renounc") && 
             !maliciousItem.resolution.toLowerCase().includes("alternative equally effective mitigation")) {
           isScam = true;
           break;
