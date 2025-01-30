@@ -88,4 +88,5 @@ export interface AuditResults {
   maliciousPatterns: MaliciousPattern[];
   tokenomics: TokenomicsData;
   liveAudit: LiveAuditData;
+  isScam: boolean;
 } 

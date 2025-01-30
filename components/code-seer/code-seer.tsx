@@ -122,6 +122,11 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
         ) : (
           auditResults && (
             <div className="space-y-6">
+              {auditResults.isScam && (
+                <div className="bg-red-900/50 border border-red-500 p-4 rounded-lg mb-6">
+                  <p className="text-red-400 font-bold">⚠️ Warning: This contract contains unresolvable malicious patterns!</p>
+                </div>
+              )}
               <RiskAssessment 
                 data={auditResults.riskAssessment}
                 codeAudit={auditResults.codeAudit}

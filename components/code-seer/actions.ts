@@ -24,7 +24,8 @@ async function performAudit(sourceCode: string) {
       riskAssessment: auditResult.riskAssessmentAndSummary,
       codeAudit: auditResult.codeAudit.vulnerabilities,
       maliciousPatterns: auditResult.maliciousCodeDetection.malicious_code,
-      tokenomics: auditResult.tokenomicsAndTradingFunctionalityAudit.tokenomics
+      tokenomics: auditResult.tokenomicsAndTradingFunctionalityAudit.tokenomics,
+      isScam: auditResult.isScam
     }
     
     console.log('Transformed data:', transformedData)
