@@ -16,8 +16,13 @@ export function Tokenomics({ data, liveAudit }: TokenomicsProps) {
     purpose: string, 
     description: string 
   }) => {
-    const start = tax.startingPercentage !== null ? `${tax.startingPercentage}%` : 'N/A'
-    const final = tax.finalPercentage !== null ? `${tax.finalPercentage}%` : 'N/A'
+    const formatValue = (value: number | null) => {
+      if (value === null) return 'N/A';
+      return value === -1 ? 'Variable' : `${value}%`;
+    }
+    
+    const start = formatValue(tax.startingPercentage);
+    const final = formatValue(tax.finalPercentage);
     
     return (
       <div className="space-y-1">
