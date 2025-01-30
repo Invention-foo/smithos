@@ -134,7 +134,10 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
               />
               <CodeAudit data={auditResults.codeAudit} />
               <MaliciousPatterns data={auditResults.maliciousPatterns} />
-              <Tokenomics data={auditResults.tokenomics} />
+              <Tokenomics 
+                data={auditResults.tokenomics} 
+                liveAudit={auditResults.liveAudit}
+              />
             </div>
           )
         )}
