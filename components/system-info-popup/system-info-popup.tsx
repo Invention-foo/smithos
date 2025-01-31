@@ -1,18 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
+import { getSystemMetrics } from './actions';
 
 interface SystemInfoPopupProps {
   onClose: () => void;
 }
 
+interface SystemMetrics {
+  performance: {
+    cpu: {
+      current: number;
+      average: {
+        oneMin: number;
+        fiveMin: number;
+        fifteenMin: number;
+      };
+    };
+    memory: {
+      used: number;
+      total: number;
+      percentage: number;
+    };
+    system: {
+      eventLoopLatency: number;
+      heapUsage: number;
+      activeHandles: number;
+      activeRequests: number;
+    };
+  };
+}
+
 export function SystemInfoPopup({ onClose }: SystemInfoPopupProps) {
   const [activeTab, setActiveTab] = useState('system');
+  const [metrics, setMetrics] = useState<SystemMetrics>({
+    performance: {
+      cpu: { current: 0, average: { oneMin: 0, fiveMin: 0, fifteenMin: 0 } },
+      memory: { used: 0, total: 0, percentage: 0 },
+      system: { eventLoopLatency: 0, heapUsage: 0, activeHandles: 0, activeRequests: 0 }
+    }
+  });
 
   const tabs = [
     { id: 'system', label: 'System' },
     { id: 'features', label: 'Features' },
     { id: 'roadmap', label: 'Roadmap' }
   ];
+
+  useEffect(() => {
+    // Initial fetch
+    fetchMetrics();
+
+    // Set up polling every 5 seconds
+    const interval = setInterval(fetchMetrics, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchMetrics = async () => {
+    try {
+      const data = await getSystemMetrics();
+      setMetrics(data);
+    } catch (error) {
+      console.error('Failed to fetch system metrics:', error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -44,23 +95,66 @@ export function SystemInfoPopup({ onClose }: SystemInfoPopupProps) {
         <div className="flex-1 overflow-y-auto p-6">
           {activeTab === 'system' && (
             <div className="space-y-6 text-green-300">
+              {/* CPU Performance */}
               <div>
-                <h3 className="text-xl font-semibold mb-3">SmithOS</h3>
-                <p>Version: 0.1.0 (Build 2025.01.31)</p>
-                <p className="text-sm text-green-400 mt-1">Built by Project Athena</p>
-                <p className="text-sm text-green-400">Powered by Arc's Reactor Mk1</p>
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-semibold mb-3">System Resources</h3>
+                <h3 className="text-xl font-semibold mb-3">CPU Performance</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-3 bg-green-800 rounded">
-                    <p className="text-sm font-medium">Memory Usage</p>
-                    <p className="text-2xl">64%</p>
+                  <div className="p-4 bg-green-800 rounded">
+                    <p className="text-sm font-medium">Current Load</p>
+                    <div className="mt-2">
+                      <div className="w-full bg-green-950 rounded-full h-2.5">
+                        <div 
+                          className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                          style={{ width: `${metrics.performance.cpu.current}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-2xl mt-2">{metrics.performance.cpu.current}%</p>
+                    </div>
                   </div>
-                  <div className="p-3 bg-green-800 rounded">
-                    <p className="text-sm font-medium">CPU Load</p>
-                    <p className="text-2xl">42%</p>
+                  <div className="p-4 bg-green-800 rounded">
+                    <p className="text-sm font-medium">Load Averages</p>
+                    <div className="space-y-2 mt-2">
+                      <p>1m: {metrics.performance.cpu.average.oneMin}</p>
+                      <p>5m: {metrics.performance.cpu.average.fiveMin}</p>
+                      <p>15m: {metrics.performance.cpu.average.fifteenMin}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Memory Performance */}
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Memory Performance</h3>
+                <div className="p-4 bg-green-800 rounded">
+                  <div className="w-full bg-green-950 rounded-full h-2.5 mb-4">
+                    <div 
+                      className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
+                      style={{ width: `${metrics.performance.memory.percentage}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-2xl">{metrics.performance.memory.percentage}% Used</p>
+                </div>
+              </div>
+
+              {/* System Performance */}
+              <div>
+                <h3 className="text-xl font-semibold mb-3">System Performance</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-800 rounded">
+                    <p className="text-sm font-medium">Event Loop Latency</p>
+                    <p className="text-2xl">{metrics.performance.system.eventLoopLatency}%</p>
+                  </div>
+                  <div className="p-4 bg-green-800 rounded">
+                    <p className="text-sm font-medium">Heap Usage</p>
+                    <p className="text-2xl">{metrics.performance.system.heapUsage}%</p>
+                  </div>
+                  <div className="p-4 bg-green-800 rounded">
+                    <p className="text-sm font-medium">Active Handles</p>
+                    <p className="text-2xl">{metrics.performance.system.activeHandles}</p>
+                  </div>
+                  <div className="p-4 bg-green-800 rounded">
+                    <p className="text-sm font-medium">Active Requests</p>
+                    <p className="text-2xl">{metrics.performance.system.activeRequests}</p>
                   </div>
                 </div>
               </div>
