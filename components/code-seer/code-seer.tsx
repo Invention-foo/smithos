@@ -74,8 +74,16 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-green-900 border border-green-500 p-6 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl text-green-500">CodeSeer Analysis</h2>
+        <div className="flex justify-between items-center mb-2">
+          <div>
+            <h2 className="text-2xl text-green-500 flex items-center gap-2">
+              CodeSeer Analysis
+              <span className="text-sm bg-green-700 text-green-200 px-2 py-0.5 rounded-full">Beta</span>
+            </h2>
+            <p className="text-green-400 text-sm mt-1">
+              Note: Audit results are powered by AthenaAI and may not always be 100% accurate as the system is still in beta.
+            </p>
+          </div>
           <button onClick={onClose} className="text-green-500 hover:text-green-400">
             <X size={24} />
           </button>
@@ -134,7 +142,10 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
               />
               <CodeAudit data={auditResults.codeAudit} />
               <MaliciousPatterns data={auditResults.maliciousPatterns} />
-              <Tokenomics data={auditResults.tokenomics} />
+              <Tokenomics 
+                data={auditResults.tokenomics} 
+                liveAudit={auditResults.liveAudit}
+              />
             </div>
           )
         )}
