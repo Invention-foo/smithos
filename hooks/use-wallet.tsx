@@ -50,24 +50,32 @@ export const useWallet = () => {
   }, [disconnect, clearTokenHoldings, status, isConnected]);
 
   useEffect(() => {
-    const saveWalletAddress = async () => {
-      if (events.data.event === "CONNECT_SUCCESS") {
-        try {
-          const { error } = await supabase.from("smith_users").insert({
-            wallet_address: address,
-            wallet_provider: walletInfo?.name,
-          });
-          if (error) {
-            console.error("Error saving wallet address:", error.message);
-          }
-        } catch (err) {
-          console.error("Error saving wallet address:", err);
+    const upsertWalletAddress = async () => {
+      if (!address || !walletInfo?.name) return;
+
+      try {
+        const { error } = await supabase
+          .from("smith_users")
+          .upsert(
+            {
+              wallet_address: address,
+              wallet_provider: walletInfo.name,
+            },
+            {
+              onConflict: 'wallet_address'
+            }
+          );
+
+        if (error) {
+          console.error("Error upserting wallet address:", error.message);
         }
+      } catch (err) {
+        console.error("Error upserting wallet address:", err);
       }
     };
 
-    saveWalletAddress();
-  }, [events, address, walletInfo?.name]);
+    upsertWalletAddress();
+  }, [address, walletInfo?.name]);
 
   return { connectWallet, disconnectWallet, isConnected, address, status };
 };
