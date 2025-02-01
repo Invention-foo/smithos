@@ -6,7 +6,7 @@ import {
   useWalletInfo,
   useDisconnect,
 } from "@reown/appkit/react";
-import { supabase } from "@/lib/supabase";
+import { signInWithWallet, signOut, supabase } from "@/lib/supabase";
 import { useTokenHoldings } from "./use-token-holdings";
 
 export const useWallet = () => {
@@ -42,12 +42,19 @@ export const useWallet = () => {
     try {
       clearTokenHoldings();
       await disconnect();
+      await signOut(); // sign out from supabase
       localStorage.removeItem("wagmi.wallet");
       localStorage.removeItem("wagmi.connected");
     } catch (error) {
       console.error("Error disconnecting wallet:", error);
     }
   }, [disconnect, clearTokenHoldings]);
+
+  useEffect(() => {
+    if (isConnected && address) {
+      signInWithWallet(address).catch(console.error); // sign in to supabase anonymously
+    }
+  }, [isConnected, address]);
 
   useEffect(() => {
     const upsertWalletAddress = async () => {
