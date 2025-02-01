@@ -6,11 +6,17 @@ interface SystemTabProps {
 
 export function SystemTab({ metrics }: SystemTabProps) {
   return (
-    <div className="space-y-4 text-green-300">
+    <div className="space-y-3 text-green-300">
+      {/* System Version */}
+      <div className="p-2 bg-green-800/50 rounded flex justify-between items-center">
+        <span className="text-sm font-medium">SmithOS v0.1.0</span>
+        <span className="text-xs text-green-400">Build 2025.01</span>
+      </div>
+
       {/* CPU Performance */}
       <div>
-        <h3 className="text-lg font-semibold mb-2">CPU Performance</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <h3 className="text-lg font-semibold mb-1.5">CPU Performance</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div className="p-3 bg-green-800 rounded">
             <p className="text-sm font-medium">Current Load</p>
             <div className="mt-1">
