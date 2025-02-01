@@ -36,7 +36,7 @@ export const useWallet = () => {
         });
       }
     }
-  }, [open, status, isConnected, walletInfo]);
+  }, [open]);
 
   const disconnectWallet = useCallback(async () => {
     try {
@@ -47,7 +47,7 @@ export const useWallet = () => {
     } catch (error) {
       console.error("Error disconnecting wallet:", error);
     }
-  }, [disconnect, clearTokenHoldings, status, isConnected]);
+  }, [disconnect, clearTokenHoldings]);
 
   useEffect(() => {
     const upsertWalletAddress = async () => {
