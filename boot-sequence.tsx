@@ -5,7 +5,7 @@ export function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [currentLine, setCurrentLine] = useState(0)
 
   const bootLines = [
-    "Initializing SmithOS v1.0...",
+    "Initializing SmithOS v0.1.0...",
     "Loading core systems...",
     "Establishing connection to RPC node...",
     "Bypassing firewalls...",
