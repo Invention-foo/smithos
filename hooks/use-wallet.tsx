@@ -1,59 +1,23 @@
-import { useCallback, useEffect } from "react";
-import {
-  useAppKit,
-  useAppKitAccount,
-  useAppKitEvents,
-  useWalletInfo,
-  useDisconnect,
-} from "@reown/appkit/react";
-import { signInWithWallet, signOut, supabase } from "@/lib/supabase";
-import { useTokenHoldings } from "./use-token-holdings";
+import { useEffect } from "react";
+import { useAppKitAccount, useWalletInfo } from "@reown/appkit/react";
+import { signInWithWallet, supabase } from "@/lib/supabase";
 
 export const useWallet = () => {
-  const { open } = useAppKit();
   const { address, isConnected, status } = useAppKitAccount();
   const { walletInfo } = useWalletInfo();
-  const { disconnect } = useDisconnect();
-  const { clearTokenHoldings } = useTokenHoldings();
-  const events = useAppKitEvents();
-
-  const connectWallet = useCallback(async () => {
-    try {
-      if (!open) {
-        console.error("AppKit open function is not available");
-        return;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      await open();
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Wallet connection error:", {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        });
-      }
-    }
-  }, [open]);
-
-  const disconnectWallet = useCallback(async () => {
-    try {
-      clearTokenHoldings();
-      await disconnect();
-      await signOut(); // sign out from supabase
-      localStorage.removeItem("wagmi.wallet");
-      localStorage.removeItem("wagmi.connected");
-    } catch (error) {
-      console.error("Error disconnecting wallet:", error);
-    }
-  }, [disconnect, clearTokenHoldings]);
 
   useEffect(() => {
-    if (isConnected && address) {
-      signInWithWallet(address).catch(console.error); // sign in to supabase anonymously
-    }
+    const handleSignIn = async (): Promise<void> => {
+      if (isConnected && address) {
+        try {
+          await signInWithWallet(address);
+        } catch (error) {
+          console.error("Sign in error:", error);
+        }
+      }
+    };
+
+    handleSignIn();
   }, [isConnected, address]);
 
   useEffect(() => {
@@ -61,17 +25,15 @@ export const useWallet = () => {
       if (!address || !walletInfo?.name) return;
 
       try {
-        const { error } = await supabase
-          .from("smith_users")
-          .upsert(
-            {
-              wallet_address: address,
-              wallet_provider: walletInfo.name,
-            },
-            {
-              onConflict: 'wallet_address'
-            }
-          );
+        const { error } = await supabase.from("smith_users").upsert(
+          {
+            wallet_address: address,
+            wallet_provider: walletInfo.name,
+          },
+          {
+            onConflict: "wallet_address",
+          }
+        );
 
         if (error) {
           console.error("Error upserting wallet address:", error.message);
@@ -84,5 +46,5 @@ export const useWallet = () => {
     upsertWalletAddress();
   }, [address, walletInfo?.name]);
 
-  return { connectWallet, disconnectWallet, isConnected, address, status };
+  return { isConnected, address, status };
 };

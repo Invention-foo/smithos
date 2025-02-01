@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { TruncatedAddress } from "./truncated-address";
-import { useWallet } from "@/hooks/use-wallet";
 import { useTokenHoldings, Token } from "@/hooks/use-token-holdings";
 import { useAppKitAccount } from "@reown/appkit/react";
+import { disconnectWallet } from "@/lib/wallet";
 
 interface TokenHoldingsProps {
   onClose: () => void;
@@ -12,7 +12,6 @@ interface TokenHoldingsProps {
 const MAX_TOKENS_VISIBLE = 5;
 
 export function TokenHoldings({ onClose }: TokenHoldingsProps) {
-  const { disconnectWallet } = useWallet();
   const { address } = useAppKitAccount();
   const { tokens, isLoading, error } = useTokenHoldings();
   const [showMore, setShowMore] = useState(false);
