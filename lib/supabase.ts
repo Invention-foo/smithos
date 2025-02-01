@@ -7,8 +7,29 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
+export async function getSession() {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession()
+    if (error) throw error
+    return session
+  } catch (error) {
+    console.error('Error getting session:', error)
+    return null
+  }
+}
+
+export async function isSignedIn() {
+  const session = await getSession()
+  return !!session
+}
+
 export async function signInWithWallet(walletAddress: string) {
   try {
+    const session = await getSession()
+    if (session) {
+      return { data: session, error: null }
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: `${walletAddress}@wallet.com`,
       password: 'dummy-wallet-password'
