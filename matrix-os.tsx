@@ -18,7 +18,7 @@ import {
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
 import { MatrixRain, type MatrixRainRef } from "./matrix-rain"
-import { SettingsMenu } from "./settings-menu"
+import { SettingsMenu } from "@/components/settings-menu"
 import { Terminal } from "./components/terminal"
 import { SystemInfoPopup } from "@/components/system-info-popup"
 import { DocumentsModal } from "./components/documents-modal"
