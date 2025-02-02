@@ -1,24 +1,10 @@
 import { useEffect } from "react";
 import { useAppKitAccount, useWalletInfo } from "@reown/appkit/react";
-import { signInWithWallet, supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const useWallet = () => {
   const { address, isConnected, status } = useAppKitAccount();
   const { walletInfo } = useWalletInfo();
-
-  useEffect(() => {
-    const handleSignIn = async (): Promise<void> => {
-      if (isConnected && address) {
-        try {
-          await signInWithWallet(address);
-        } catch (error) {
-          console.error("Sign in error:", error);
-        }
-      }
-    };
-
-    handleSignIn();
-  }, [isConnected, address]);
 
   useEffect(() => {
     const upsertWalletAddress = async () => {
