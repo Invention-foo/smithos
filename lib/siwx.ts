@@ -13,7 +13,7 @@ class SIWXLocalStorage extends LocalStorage {
     nonce: string,
     chainType: string
   ) {
-    const response = await fetch("/api/verifySign", {
+    const response = await fetch("/api/verifySignature", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
