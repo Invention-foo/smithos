@@ -13,6 +13,23 @@ export function DisplaySettings() {
     { name: 'Hacker Yellow', value: '#ffff00' },
   ];
 
+  const handleColorChange = (color: string) => {
+    // Convert hex to RGB to check brightness
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    
+    // Calculate perceived brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    if (brightness < 50) {
+      alert('Please select a brighter color. Very dark colors may make the interface unusable.');
+      return;
+    }
+
+    updateDisplaySettings({ themeColor: color });
+  };
+
   return (
     <div className="space-y-6">
       <h3 className="text-xl mb-4">Display Settings</h3>
@@ -36,7 +53,7 @@ export function DisplaySettings() {
           <input 
             type="color" 
             value={display.themeColor}
-            onChange={(e) => updateDisplaySettings({ themeColor: e.target.value })}
+            onChange={(e) => handleColorChange(e.target.value)}
             className="mt-2 w-full h-10 rounded"
           />
         </div>
