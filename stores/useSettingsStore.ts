@@ -2,15 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface DisplaySettings {
-  glowIntensity: number;
-  rainSpeed: number;
-  textColor: string;
-  effects: {
-    scanlines: boolean;
-    blur: boolean;
-    glitch: boolean;
-    crt: boolean;
-  };
+  themeColor: string;
 }
 
 interface TerminalSettings {
@@ -51,15 +43,7 @@ export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set) => ({
       display: {
-        glowIntensity: 50,
-        rainSpeed: 50,
-        textColor: '#00ff00',
-        effects: {
-          scanlines: true,
-          blur: false,
-          glitch: true,
-          crt: false,
-        },
+        themeColor: '#00ff00', // Default Matrix green
       },
       terminal: {
         fontSize: 14,

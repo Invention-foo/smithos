@@ -4,15 +4,14 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 
 export function DisplaySettings() {
   const { display, updateDisplaySettings } = useSettingsStore();
-  
-  const handleEffectToggle = (effect: string) => {
-    updateDisplaySettings({
-      effects: {
-        ...display.effects,
-        [effect]: !display.effects[effect as keyof typeof display.effects]
-      }
-    });
-  };
+
+  const predefinedColors = [
+    { name: 'Matrix Green', value: '#00ff00' },
+    { name: 'Cyber Blue', value: '#00ffff' },
+    { name: 'Neon Purple', value: '#ff00ff' },
+    { name: 'Digital Red', value: '#ff0000' },
+    { name: 'Hacker Yellow', value: '#ffff00' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -20,52 +19,26 @@ export function DisplaySettings() {
       
       <div className="space-y-4">
         <div>
-          <label className="block mb-2">Matrix Glow Intensity</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            value={display.glowIntensity}
-            onChange={(e) => updateDisplaySettings({ glowIntensity: Number(e.target.value) })}
-            className="w-full accent-green-500"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2">Digital Rain Speed</label>
-          <input 
-            type="range" 
-            min="0" 
-            max="100" 
-            value={display.rainSpeed}
-            onChange={(e) => updateDisplaySettings({ rainSpeed: Number(e.target.value) })}
-            className="w-full accent-green-500"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2">Text Color</label>
+          <label className="block mb-2">Theme Color</label>
+          <div className="flex gap-2 flex-wrap">
+            {predefinedColors.map((color) => (
+              <button
+                key={color.value}
+                className={`w-10 h-10 rounded-full border-2 ${
+                  display.themeColor === color.value ? 'border-white' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: color.value }}
+                onClick={() => updateDisplaySettings({ themeColor: color.value })}
+                title={color.name}
+              />
+            ))}
+          </div>
           <input 
             type="color" 
-            value={display.textColor}
-            onChange={(e) => updateDisplaySettings({ textColor: e.target.value })}
-            className="w-full h-10 rounded"
+            value={display.themeColor}
+            onChange={(e) => updateDisplaySettings({ themeColor: e.target.value })}
+            className="mt-2 w-full h-10 rounded"
           />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block mb-2">Visual Effects</label>
-          {Object.entries(display.effects).map(([effect, enabled]) => (
-            <label key={effect} className="flex items-center">
-              <input 
-                type="checkbox" 
-                checked={enabled}
-                onChange={() => handleEffectToggle(effect)}
-                className="mr-2"
-              />
-              {effect.charAt(0).toUpperCase() + effect.slice(1)}
-            </label>
-          ))}
         </div>
       </div>
     </div>

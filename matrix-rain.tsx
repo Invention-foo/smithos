@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react'
+import { useSettingsStore } from '@/stores/useSettingsStore'
 
 export interface MatrixRainRef {
   startFadeOut: () => void;
@@ -28,6 +29,7 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
   const messageStarted = useRef(false)
   const messageComplete = useRef(false)
   const lastFormationTime = useRef(0)
+  const { display } = useSettingsStore()
 
   useImperativeHandle(ref, () => ({
     startFadeOut: () => {
@@ -79,6 +81,11 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
 
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+{}[]|;:,.<>?'
 
+    // Convert hex color to RGB components
+    const r = parseInt(display.themeColor.slice(1, 3), 16)
+    const g = parseInt(display.themeColor.slice(3, 5), 16)
+    const b = parseInt(display.themeColor.slice(5, 7), 16)
+
     function draw() {
       ctx.fillStyle = `rgba(0, 0, 0, ${0.05 * opacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -100,15 +107,15 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
           
           if (!messageChar.formed) {
             messageChar.currentChar = chars[Math.floor(Math.random() * chars.length)]
-            ctx.fillStyle = `rgba(0, 255, 0, ${messageChar.opacity * 0.5})`
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${messageChar.opacity * 0.5})`
             ctx.fillText(messageChar.currentChar, x, y)
           } else {
-            ctx.fillStyle = `rgba(0, 255, 0, ${messageChar.opacity})`
-            ctx.fillText(messageChar.char, x, messageChar.y)
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${messageChar.opacity})`
+            ctx.fillText(messageChar.char, messageChar.y)
           }
         } else {
           const text = chars[Math.floor(Math.random() * chars.length)]
-          ctx.fillStyle = `rgba(0, 255, 0, ${opacity * 0.5})`
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity * 0.5})`
           ctx.fillText(text, x, y)
         }
 
@@ -143,10 +150,10 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
       // Draw formed message characters on top with glow effect
       ctx.save()
       ctx.shadowBlur = 3  // Reduced from 5 to 3
-      ctx.shadowColor = 'rgba(0, 255, 0, 0.3)'  // Reduced opacity from 0.5 to 0.3
+      ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.3)`
       messagePositions.forEach(pos => {
         if (pos.formed) {
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.9)'  // Slightly reduced opacity from 1 to 0.9
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.9)`  // Now using theme color
           ctx.fillText(pos.char, pos.x, pos.y)
         }
       })
@@ -169,7 +176,7 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
         cancelAnimationFrame(animationRef.current)
       }
     }
-  }, [opacity])
+  }, [opacity, display.themeColor])
 
   useEffect(() => {
     if (isFadingOut) {

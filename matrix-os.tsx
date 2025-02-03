@@ -27,6 +27,8 @@ import { Dashboard } from "./components/dashboard"
 import { NeuralScan } from "./components/neural-scan"
 import { CodeSeer } from "@/components/code-seer"
 import { NeoGuard } from "./components/neo-guard"
+import { useSettingsStore } from "@/stores/useSettingsStore"
+import { hexToRgb } from "@/hooks/useThemeColor"
 
 
 export default function MatrixOS() {
@@ -283,13 +285,16 @@ function MainOS({
 
 function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
+  const { display } = useSettingsStore()
+  
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
+
+    const { r, g, b } = hexToRgb(display.themeColor)
 
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
@@ -321,7 +326,7 @@ function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
             const x = i * 20
             const y = j * 20
             const char = String.fromCharCode(Math.random() * 128)
-            ctx.fillStyle = `rgba(0, 255, 0, ${opacity})`
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`
             ctx.fillText(char, x, y)
           }
         }
@@ -339,7 +344,7 @@ function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
     }
 
     draw()
-  }, [onComplete])
+  }, [onComplete, display.themeColor])
 
   return <canvas ref={canvasRef} className="fixed inset-0 z-50 bg-black" aria-label="Shutdown effect" />
 }

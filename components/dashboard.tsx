@@ -94,13 +94,13 @@ export function Dashboard({ onClose }: DashboardProps) {
                   >
                     <XAxis 
                       dataKey="date" 
-                      stroke="#00ffaa" 
+                      stroke="var(--chart-color)" 
                       axisLine={false}
                       tickLine={false}
                       tick={false}
                     />
                     <YAxis 
-                      stroke="#00ffaa" 
+                      stroke="var(--chart-color)" 
                       axisLine={false}
                       tickLine={false}
                       tick={false}
@@ -121,8 +121,8 @@ export function Dashboard({ onClose }: DashboardProps) {
                     <Area 
                       type="monotone" 
                       dataKey="value" 
-                      stroke="#00ffaa" 
-                      fill="#00ffaa" 
+                      stroke="var(--chart-color)" 
+                      fill="var(--chart-color)" 
                       fillOpacity={0.2}
                       strokeWidth={2}
                     />
