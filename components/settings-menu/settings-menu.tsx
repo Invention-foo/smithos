@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sliders, Shield, Eye, Clock, User } from 'lucide-react';
+import { Sliders, Shield, Eye, Clock, User, Monitor, Terminal, Volume2 } from 'lucide-react';
 import type { SettingsMenuProps } from '@/types/settings';
 import { SettingsTab } from './components/settings-tab';
 import { SystemCamouflage } from './components/system-camouflage';
@@ -7,22 +7,21 @@ import { FirewallConfiguration } from './components/firewall-config';
 import { NeuralInterface } from './components/neural-interface';
 import { TimeDistortion } from './components/time-distortion';
 import { AgentClearance } from './components/agent-clearance';
+import { DisplaySettings } from './components/display-settings';
+import { TerminalSettings } from './components/terminal-settings';
+import { SoundSettings } from './components/sound-settings';
 
 export function SettingsMenu({ onClose }: SettingsMenuProps) {
-  const [activeTab, setActiveTab] = useState('camouflage');
+  const [activeTab, setActiveTab] = useState('display');
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'camouflage':
-        return <SystemCamouflage />;
-      case 'firewall':
-        return <FirewallConfiguration />;
-      case 'neural':
-        return <NeuralInterface />;
-      case 'time':
-        return <TimeDistortion />;
-      case 'clearance':
-        return <AgentClearance />;
+      case 'display':
+        return <DisplaySettings />;
+      case 'terminal':
+        return <TerminalSettings />;
+      case 'sound':
+        return <SoundSettings />;
       default:
         return null;
     }
@@ -38,11 +37,9 @@ export function SettingsMenu({ onClose }: SettingsMenuProps) {
         <div className="flex">
           <div className="w-1/4 pr-4 border-r border-green-500">
             <ul>
-              <SettingsTab icon={<Sliders size={18} />} label="System Camouflage" id="camouflage" activeTab={activeTab} setActiveTab={setActiveTab} />
-              <SettingsTab icon={<Shield size={18} />} label="Firewall Configuration" id="firewall" activeTab={activeTab} setActiveTab={setActiveTab} />
-              <SettingsTab icon={<Eye size={18} />} label="Neural Interface" id="neural" activeTab={activeTab} setActiveTab={setActiveTab} />
-              <SettingsTab icon={<Clock size={18} />} label="Time Distortion" id="time" activeTab={activeTab} setActiveTab={setActiveTab} />
-              <SettingsTab icon={<User size={18} />} label="Agent Clearance Level" id="clearance" activeTab={activeTab} setActiveTab={setActiveTab} />
+              <SettingsTab icon={<Monitor size={18} />} label="Display Settings" id="display" activeTab={activeTab} setActiveTab={setActiveTab} />
+              <SettingsTab icon={<Terminal size={18} />} label="Terminal Settings" id="terminal" activeTab={activeTab} setActiveTab={setActiveTab} />
+              <SettingsTab icon={<Volume2 size={18} />} label="Sound Settings" id="sound" activeTab={activeTab} setActiveTab={setActiveTab} />
             </ul>
           </div>
           <div className="w-3/4 pl-4">
