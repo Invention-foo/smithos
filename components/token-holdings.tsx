@@ -4,6 +4,7 @@ import { TruncatedAddress } from "./truncated-address";
 import { useTokenHoldings, Token } from "@/hooks/use-token-holdings";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { disconnectWallet } from "@/lib/wallet";
+import TokenCard from "./TokenCard";
 
 interface TokenHoldingsProps {
   onClose: () => void;
@@ -18,38 +19,6 @@ export function TokenHoldings({ onClose }: TokenHoldingsProps) {
 
   const visibleTokens = tokens.slice(0, MAX_TOKENS_VISIBLE);
   const hiddenTokens = tokens.slice(MAX_TOKENS_VISIBLE);
-
-  const TokenCard = ({ token }: { token: Token }) => (
-    <div
-      className={`p-4 rounded-lg bg-green-800/60 
-        flex justify-between items-center hover:bg-opacity-80 transition-colors duration-200 hover:shadow-lg`}
-    >
-      <div className="flex items-center">
-        <div>
-          <p className="font-bold text-green-100">{token.symbol}</p>
-          <p className="text-sm text-green-300/90">{token.name}</p>
-          {token.usdPrice && (
-            <p className="text-xs text-green-400/90 mt-0.5">
-              $
-              {token.usdPrice < 0.001
-                ? token.usdPrice.toExponential(3)
-                : token.usdPrice.toFixed(3)}
-            </p>
-          )}
-        </div>
-      </div>
-      <div className="text-right">
-        {token.usdValue && (
-          <p className="text-sm text-green-300/90">
-            ${token.usdValue.toFixed(2)}
-          </p>
-        )}
-        <p className="text-lg font-medium">
-          {Number(token.balanceFormatted).toFixed(2)}
-        </p>
-      </div>
-    </div>
-  );
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
