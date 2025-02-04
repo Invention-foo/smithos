@@ -6,7 +6,6 @@ import {
   Monitor,
   Folder,
   TerminalIcon,
-  Clock,
   MessageCircle,
   Twitter,
   Power,
@@ -28,6 +27,7 @@ import { NeuralScan } from "./components/neural-scan"
 import { CodeSeer } from "@/components/code-seer"
 import { NeoGuard } from "./components/neo-guard"
 import { connectWallet } from "@/lib/wallet"
+import Clock from "@/components/Clock"
 
 
 export default function MatrixOS() {
@@ -119,7 +119,6 @@ function MainOS({
   opacity: number
   onShutdown: () => void
 }) {
-  const [time, setTime] = useState(new Date())
   const [showStartMenu, setShowStartMenu] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
@@ -140,11 +139,6 @@ function MainOS({
       await connectWallet()
     }
   }
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   const programs = [
     { icon: <TerminalIcon />, label: "Terminal", action: () => setShowTerminal(true) },
@@ -210,10 +204,7 @@ function MainOS({
                 <span className="text-yellow-500">Connect Wallet</span>
               )}
             </button>
-            <div className="flex items-center space-x-2">
-              <Clock className="w-5 h-5" />
-              <span>{time.toLocaleTimeString()}</span>
-            </div>
+            <Clock />
           </div>
         </div>
 
