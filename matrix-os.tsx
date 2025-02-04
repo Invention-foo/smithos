@@ -29,6 +29,7 @@ import { CodeSeer } from "@/components/code-seer"
 import { NeoGuard } from "./components/neo-guard"
 import { useSettingsStore } from "@/stores/useSettingsStore"
 import { hexToRgb } from "@/hooks/useThemeColor"
+import { connectWallet } from "@/lib/wallet"
 
 
 export default function MatrixOS() {
@@ -132,8 +133,15 @@ function MainOS({
   const [showNeuralScan, setShowNeuralScan] = useState(false)
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
-  const { connectWallet, isConnected: isWalletConnected, address } = useWallet()
+  const { isConnected: isWalletConnected, address } = useWallet()
 
+  const handleWalletClick = async () => {
+    if (isWalletConnected) {
+      setShowTokenHoldings(true)
+    } else {
+      await connectWallet()
+    }
+  }
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
@@ -195,7 +203,7 @@ function MainOS({
           <div className="flex items-center space-x-4">
             <button
               className="flex items-center space-x-2 text-green-300 text-sm hover:text-green-100 transition-colors"
-              onClick={() => (isWalletConnected ? setShowTokenHoldings(true) : connectWallet())}
+              onClick={handleWalletClick}
             >
               <span>SSH:</span>
               {isWalletConnected ? (
