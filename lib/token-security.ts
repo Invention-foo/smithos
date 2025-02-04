@@ -63,23 +63,25 @@ const evaluateSecurityRisks = (results: any) => {
 export const updateOrGetTokenSecurityStatus = async (
   tokenAddresses: string[],
   chainId: string
-): Promise<Record<string, { audit_report: string; status: string; token_address: string }> | null> => {
+): Promise<Record<string, { audit_report: string; status: string; token_identifier: string }> | null> => {
   try {
-    const securityData: Record<string, { audit_report: string; status: string; token_address: string }> = {};
+    const securityData: Record<string, { audit_report: string; status: string; token_identifier: string }> = {};
+    const tokenIdentifiers = tokenAddresses.map(addr => `${chainId}_${addr}`);
+
     const { data: existingTokens } = await supabase
       .from('smith_audits')
-      .select('token_address, audit_report, status')
-      .in('token_address', tokenAddresses);
+      .select('token_identifier, audit_report, status')
+      .in('token_identifier', tokenIdentifiers);
 
-    const existingAddresses = new Set(existingTokens?.map(t => t.token_address) || []);
-    const newAddresses = tokenAddresses.filter(addr => !existingAddresses.has(addr));
+    const existingIdentifiers = new Set(existingTokens?.map(t => t.token_identifier) || []);
+    const newAddresses = tokenAddresses.filter(addr => !existingIdentifiers.has(`${chainId}_${addr}`));
 
     // Get existing security data
     existingTokens?.forEach(token => {
-      securityData[token.token_address] = {
+      securityData[token.token_identifier.split('_')[1]] = {
         audit_report: token.audit_report,
         status: token.status,
-        token_address: token.token_address
+        token_identifier: token.token_identifier
       };
     });
 
@@ -97,18 +99,19 @@ export const updateOrGetTokenSecurityStatus = async (
       const data = await response.json();
       const tokenResults = data.result[tokenAddress];
       const securityEvaluation = evaluateSecurityRisks(tokenResults);
+      const tokenIdentifier = `${chainId}_${tokenAddress}`;
       
       securityData[tokenAddress] = {
         audit_report: securityEvaluation.message,
         status: securityEvaluation.status,
-        token_address: tokenAddress
+        token_identifier: tokenIdentifier
       };
 
       // Store new security data in Supabase
       await supabase
         .from('smith_audits')
         .insert({
-          token_address: tokenAddress,
+          token_identifier: tokenIdentifier,
           audit_report: securityEvaluation.message,
           raw_results: tokenResults,
           status: securityEvaluation.status
