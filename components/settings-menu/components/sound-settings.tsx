@@ -40,7 +40,9 @@ export function SoundSettings() {
           />
         </div>
 
-        {Object.entries(sound.sounds).map(([soundType, enabled]) => (
+        {Object.entries(sound.sounds)
+          .filter(([type]) => type !== 'startupSound' && type !== 'shutdownSound')
+          .map(([soundType, enabled]) => (
           <div key={soundType} className="space-y-2">
             <label className="flex items-center">
               <input 

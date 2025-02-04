@@ -3,10 +3,11 @@ import './globals.css'
 import { headers } from "next/headers";
 import ContextProvider from '@/context';
 import { ThemeProvider } from '@/components/theme-provider';
+import { SoundHandler } from '@/components/sound-handler'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: 'SmithOS',
+  description: 'A Matrix-inspired operating system interface',
 }
 
 export default function RootLayout({
@@ -20,6 +21,7 @@ export default function RootLayout({
       <body>
         <ContextProvider cookies={cookies}>
           <ThemeProvider>
+            <SoundHandler />
             {children}
           </ThemeProvider>
         </ContextProvider>
