@@ -43,7 +43,7 @@ export function useThemeColor() {
       .ring-green-500 { --tw-ring-color: var(--theme-color) !important; }
       
       /* Focus ring colors */
-      .focus\\:ring-green-400:focus { --tw-ring-color: color-mix(in srgb, var(--theme-color) 80%, white) !important; }
+      .focus\\:ring-green-400:focus { --tw-ring-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white)) !important; }
       .focus\\:ring-green-500:focus { --tw-ring-color: var(--theme-color) !important; }
       
       /* Background colors - solid */
@@ -127,6 +127,12 @@ export function useThemeColor() {
       
       /* Accent colors */
       .accent-green-500 { accent-color: var(--theme-color) !important; }
+
+      /* Chart colors */
+      :root {
+        --chart-color: ${display.themeColor};
+        --chart-color-20: ${hexToRgba(display.themeColor, 0.2)};
+      }
     `;
     
     document.head.appendChild(style);
