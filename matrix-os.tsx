@@ -14,6 +14,7 @@ import {
   Code,
   Shield,
   Search,
+  ChevronRight,
 } from "lucide-react"
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
@@ -30,6 +31,7 @@ import { NeoGuard } from "./components/neo-guard"
 import { useSettingsStore } from "@/stores/useSettingsStore"
 import { hexToRgb } from "@/hooks/useThemeColor"
 import { connectWallet } from "@/lib/wallet"
+import { MenuWrapper } from '@/components/menu-wrapper'
 
 
 export default function MatrixOS() {
@@ -123,9 +125,9 @@ function MainOS({
 }) {
   const [time, setTime] = useState(new Date())
   const [showStartMenu, setShowStartMenu] = useState(false)
+  const [showProgramsMenu, setShowProgramsMenu] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
-  const [showProgramsSubmenu, setShowProgramsSubmenu] = useState(false)
   const [showSystemInfo, setShowSystemInfo] = useState(false)
   const [showDocuments, setShowDocuments] = useState(false)
   const [showTokenHoldings, setShowTokenHoldings] = useState(false)
@@ -134,6 +136,8 @@ function MainOS({
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
   const { isConnected: isWalletConnected, address } = useWallet()
+  const startButtonRef = useRef<HTMLButtonElement>(null)
+  const programsButtonRef = useRef<HTMLButtonElement>(null)
 
   const handleWalletClick = async () => {
     if (isWalletConnected) {
@@ -143,18 +147,14 @@ function MainOS({
     }
   }
 
+  const handleMouseLeave = () => {
+    setShowProgramsMenu(false)
+  }
+
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
-
-  const programs = [
-    { icon: <TerminalIcon />, label: "Terminal", action: () => setShowTerminal(true) },
-    { icon: <BarChart2 />, label: "Dashboard", action: () => setShowDashboard(true) },
-    { icon: <Search />, label: "NeuralScan", action: () => setShowNeuralScan(true) },
-    { icon: <Code />, label: "CodeSeer", action: () => setShowCodeSeer(true) },
-    { icon: <Shield />, label: "NeoGuard", action: () => setShowNeoGuard(true) },
-  ]
 
   return (
     <div className="bg-black text-green-500 min-h-screen font-mono relative overflow-hidden" style={{ opacity }}>
@@ -195,11 +195,127 @@ function MainOS({
         {/* Taskbar */}
         <div className="fixed bottom-0 left-0 right-0 bg-green-900 p-2 flex justify-between items-center z-20">
           <button
-            className="bg-green-700 hover:bg-green-600 text-black px-4 py-2 rounded"
+            ref={startButtonRef}
+            className="bg-green-700 hover:bg-green-600 text-green-100 px-4 py-2 rounded"
             onClick={() => setShowStartMenu(!showStartMenu)}
           >
             Start
           </button>
+
+          {showStartMenu && (
+            <MenuWrapper 
+              onClose={() => {
+                setShowStartMenu(false);
+                setShowProgramsMenu(false);
+              }}
+              className="rounded-t-lg shadow-lg w-64 mb-2"
+              triggerRef={startButtonRef}
+            >
+              <div className="py-2">
+                <button 
+                  ref={programsButtonRef}
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded flex justify-between items-center group"
+                  onMouseEnter={() => setShowProgramsMenu(true)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  Programs
+                  <ChevronRight className="h-4 w-4 text-green-400 group-hover:text-green-100" />
+                </button>
+
+                {showProgramsMenu && (
+                  <div 
+                    className="absolute left-full top-0 w-64 bg-green-900 border border-green-500 rounded-lg shadow-lg -mt-2"
+                    onMouseEnter={() => setShowProgramsMenu(true)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <div className="py-2">
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowCodeSeer(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        CodeSeer
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowNeuralScan(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        NeuralScan
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowTokenInsight(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        TokenInsight
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowNeoGuard(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        NeoGuard
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowTerminal(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        Terminal
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <button 
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded"
+                  onClick={() => {
+                    setShowSystemInfo(true);
+                    setShowStartMenu(false);
+                  }}
+                >
+                  System Info
+                </button>
+                <button 
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded"
+                  onClick={() => {
+                    setShowDocuments(true);
+                    setShowStartMenu(false);
+                  }}
+                >
+                  Documents
+                </button>
+                <button 
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded"
+                  onClick={() => {
+                    setShowSettings(true);
+                    setShowStartMenu(false);
+                  }}
+                >
+                  Settings
+                </button>
+                <div className="border-t border-green-700 my-2" />
+                <button 
+                  className="w-full text-left px-4 py-2 text-red-400 hover:bg-green-700 rounded"
+                  onClick={onShutdown}
+                >
+                  Shutdown
+                </button>
+              </div>
+            </MenuWrapper>
+          )}
+
           <div className="flex items-center space-x-4">
             <button
               className="flex items-center space-x-2 text-green-300 text-sm hover:text-green-100 transition-colors"
@@ -219,60 +335,6 @@ function MainOS({
           </div>
         </div>
 
-        {/* Start Menu */}
-        {showStartMenu && (
-          <div className="fixed bottom-12 left-0 w-64 bg-green-900 border border-green-500 p-4">
-            <h2 className="text-xl mb-4">SmithOS</h2>
-            <ul>
-              <li
-                className="mb-2 hover:bg-green-700 p-2 cursor-pointer relative"
-                onMouseEnter={() => setShowProgramsSubmenu(true)}
-                onMouseLeave={() => setShowProgramsSubmenu(false)}
-              >
-                Programs
-                {showProgramsSubmenu && (
-                  <div
-                    className="absolute left-full bottom-0 w-48 bg-green-900 border border-green-500 p-2"
-                    style={{ maxHeight: "calc(100vh - 48px)", overflowY: "auto" }}
-                  >
-                    {programs.map((program, index) => (
-                      <div
-                        key={index}
-                        className="p-2 hover:bg-green-700 cursor-pointer flex items-center"
-                        onClick={() => {
-                          program.action()
-                          setShowStartMenu(false)
-                          setShowProgramsSubmenu(false)
-                        }}
-                      >
-                        {program.icon}
-                        <span className="ml-2">{program.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </li>
-              <li
-                className="mb-2 hover:bg-green-700 p-2 cursor-pointer"
-                onClick={() => {
-                  setShowStartMenu(false)
-                  setShowSettings(true)
-                }}
-              >
-                Settings
-              </li>
-              <li
-                className="mb-2 hover:bg-green-700 p-2 cursor-pointer"
-                onClick={() => {
-                  setShowStartMenu(false)
-                  onShutdown()
-                }}
-              >
-                Shut Down
-              </li>
-            </ul>
-          </div>
-        )}
         {showSettings && <SettingsMenu onClose={() => setShowSettings(false)} />}
         {showTerminal && <Terminal onClose={() => setShowTerminal(false)} />}
         {showSystemInfo && <SystemInfoPopup onClose={() => setShowSystemInfo(false)} />}
