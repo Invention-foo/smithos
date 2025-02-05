@@ -63,25 +63,26 @@ const evaluateSecurityRisks = (results: any) => {
 export const updateOrGetTokenSecurityStatus = async (
   tokenAddresses: string[],
   chainId: string
-): Promise<Record<string, { audit_report: string; status: string; token_identifier: string }> | null> => {
+): Promise<Record<string, { audit_report: string; status: string; blockchain: string; address: string }> | null> => {
   try {
-    const securityData: Record<string, { audit_report: string; status: string; token_identifier: string }> = {};
-    const tokenIdentifiers = tokenAddresses.map(addr => `${chainId}_${addr}`);
+    const securityData: Record<string, { audit_report: string; status: string; blockchain: string; address: string }> = {};
 
     const { data: existingTokens } = await supabase
       .from('smith_audits')
-      .select('token_identifier, audit_report, status')
-      .in('token_identifier', tokenIdentifiers);
+      .select('blockchain, address, audit_report, status')
+      .eq('blockchain', chainId)
+      .in('address', tokenAddresses);
 
-    const existingIdentifiers = new Set(existingTokens?.map(t => t.token_identifier) || []);
-    const newAddresses = tokenAddresses.filter(addr => !existingIdentifiers.has(`${chainId}_${addr}`));
+    const existingAddresses = new Set(existingTokens?.map(t => t.address) || []);
+    const newAddresses = tokenAddresses.filter(addr => !existingAddresses.has(addr));
 
     // Get existing security data
     existingTokens?.forEach(token => {
-      securityData[token.token_identifier.split('_')[1]] = {
+      securityData[token.address] = {
         audit_report: token.audit_report,
         status: token.status,
-        token_identifier: token.token_identifier
+        blockchain: token.blockchain,
+        address: token.address
       };
     });
 
@@ -99,22 +100,25 @@ export const updateOrGetTokenSecurityStatus = async (
       const data = await response.json();
       const tokenResults = data.result[tokenAddress];
       const securityEvaluation = evaluateSecurityRisks(tokenResults);
-      const tokenIdentifier = `${chainId}_${tokenAddress}`;
       
       securityData[tokenAddress] = {
         audit_report: securityEvaluation.message,
         status: securityEvaluation.status,
-        token_identifier: tokenIdentifier
+        blockchain: chainId,
+        address: tokenAddress
       };
 
-      // Store new security data in Supabase
+      // Store new security data in Supabase with upsert
       await supabase
         .from('smith_audits')
-        .insert({
-          token_identifier: tokenIdentifier,
+        .upsert({
+          blockchain: chainId,
+          address: tokenAddress,
           audit_report: securityEvaluation.message,
           raw_results: tokenResults,
           status: securityEvaluation.status
+        }, {
+          onConflict: 'blockchain,address'
         });
     }
 
