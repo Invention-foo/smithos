@@ -13,21 +13,31 @@ import {
   Code,
   Shield,
   Search,
+  ChevronRight,
+  Gamepad2,
+  X,
+  Pill,
 } from "lucide-react"
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
 import { MatrixRain, type MatrixRainRef } from "./matrix-rain"
-import { SettingsMenu } from "./settings-menu"
+import { SettingsMenu } from "@/components/settings-menu"
 import { Terminal } from "./components/terminal"
 import { SystemInfoPopup } from "@/components/system-info-popup"
-import { DocumentsModal } from "./components/documents-modal"
+import { DocumentsModal } from "@/components/documents-modal"
 import { TokenHoldings } from "./components/token-holdings"
 import { Dashboard } from "./components/dashboard"
 import { NeuralScan } from "./components/neural-scan"
 import { CodeSeer } from "@/components/code-seer"
 import { NeoGuard } from "./components/neo-guard"
+import { useSettingsStore } from "@/stores/useSettingsStore"
+import { hexToRgb } from "@/hooks/useThemeColor"
 import { connectWallet } from "@/lib/wallet"
-import Clock from "@/components/Clock"
+import { MenuWrapper } from '@/components/menu-wrapper'
+import { RedPillBluePill } from "@/components/games/RedPillBluePill"
+import { ModalWrapper } from '@/components/modal-wrapper'
+import { CodeRain } from "@/components/games/CodeRain"
+import Clock from "./components/Clock"
 
 
 export default function MatrixOS() {
@@ -120,9 +130,9 @@ function MainOS({
   onShutdown: () => void
 }) {
   const [showStartMenu, setShowStartMenu] = useState(false)
+  const [showProgramsMenu, setShowProgramsMenu] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showTerminal, setShowTerminal] = useState(false)
-  const [showProgramsSubmenu, setShowProgramsSubmenu] = useState(false)
   const [showSystemInfo, setShowSystemInfo] = useState(false)
   const [showDocuments, setShowDocuments] = useState(false)
   const [showTokenHoldings, setShowTokenHoldings] = useState(false)
@@ -130,7 +140,12 @@ function MainOS({
   const [showNeuralScan, setShowNeuralScan] = useState(false)
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
+  const [showGames, setShowGames] = useState(false)
+  const [showRedPillBluePill, setShowRedPillBluePill] = useState(false)
+  const [showCodeRain, setShowCodeRain] = useState(false)
   const { isConnected: isWalletConnected, address } = useWallet()
+  const startButtonRef = useRef<HTMLButtonElement>(null)
+  const programsButtonRef = useRef<HTMLButtonElement>(null)
 
   const handleWalletClick = async () => {
     if (isWalletConnected) {
@@ -140,13 +155,15 @@ function MainOS({
     }
   }
 
-  const programs = [
-    { icon: <TerminalIcon />, label: "Terminal", action: () => setShowTerminal(true) },
-    { icon: <BarChart2 />, label: "Dashboard", action: () => setShowDashboard(true) },
-    { icon: <Search />, label: "NeuralScan", action: () => setShowNeuralScan(true) },
-    { icon: <Code />, label: "CodeSeer", action: () => setShowCodeSeer(true) },
-    { icon: <Shield />, label: "NeoGuard", action: () => setShowNeoGuard(true) },
-  ]
+  const handleMouseLeave = () => {
+    setShowProgramsMenu(false)
+  }
+
+  const handleCloseGame = () => {
+    setShowRedPillBluePill(false)
+    setShowCodeRain(false)
+    setShowGames(false)
+  }
 
   return (
     <div className="bg-black text-green-500 min-h-screen font-mono relative overflow-hidden" style={{ opacity }}>
@@ -167,6 +184,7 @@ function MainOS({
           <div className="col-start-4 flex flex-col items-end">
             <DesktopIcon icon={<Monitor />} label="This Computer" onClick={() => setShowSystemInfo(true)} />
             <DesktopIcon icon={<Folder />} label="Documents" onClick={() => setShowDocuments(true)} />
+            <DesktopIcon icon={<Gamepad2 />} label="Games" onClick={() => setShowGames(true)} />
           </div>
         </div>
 
@@ -187,11 +205,126 @@ function MainOS({
         {/* Taskbar */}
         <div className="fixed bottom-0 left-0 right-0 bg-green-900 p-2 flex justify-between items-center z-20">
           <button
-            className="bg-green-700 hover:bg-green-600 text-black px-4 py-2 rounded"
+            ref={startButtonRef}
+            className="bg-green-700 hover:bg-green-600 text-green-100 px-4 py-2 rounded"
             onClick={() => setShowStartMenu(!showStartMenu)}
           >
             Start
           </button>
+
+          {showStartMenu && (
+            <MenuWrapper 
+              onClose={() => {
+                setShowStartMenu(false);
+                setShowProgramsMenu(false);
+              }}
+              className="rounded-t-lg shadow-lg w-64 mb-2"
+              triggerRef={startButtonRef}
+            >
+              <div className="py-2">
+                <button 
+                  ref={programsButtonRef}
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded flex justify-between items-center group"
+                  onMouseEnter={() => setShowProgramsMenu(true)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  Programs
+                  <ChevronRight className="h-4 w-4 text-green-400 group-hover:text-green-100" />
+                </button>
+
+                {showProgramsMenu && (
+                  <div 
+                    className="absolute left-full top-0 w-64 bg-green-900 border border-green-500 rounded-lg shadow-lg -mt-2"
+                    onMouseEnter={() => setShowProgramsMenu(true)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <div className="py-2">
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowCodeSeer(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        CodeSeer
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowNeuralScan(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        NeuralScan
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        TokenInsight
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowNeoGuard(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        NeoGuard
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          setShowTerminal(true);
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        Terminal
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <button 
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded"
+                  onClick={() => {
+                    setShowSystemInfo(true);
+                    setShowStartMenu(false);
+                  }}
+                >
+                  System Info
+                </button>
+                <button 
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded"
+                  onClick={() => {
+                    setShowDocuments(true);
+                    setShowStartMenu(false);
+                  }}
+                >
+                  Documents
+                </button>
+                <button 
+                  className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700 rounded"
+                  onClick={() => {
+                    setShowSettings(true);
+                    setShowStartMenu(false);
+                  }}
+                >
+                  Settings
+                </button>
+                <div className="border-t border-green-700 my-2" />
+                <button 
+                  className="w-full text-left px-4 py-2 text-red-400 hover:bg-green-700 rounded"
+                  onClick={onShutdown}
+                >
+                  Shutdown
+                </button>
+              </div>
+            </MenuWrapper>
+          )}
+
           <div className="flex items-center space-x-4">
             <button
               className="flex items-center space-x-2 text-green-300 text-sm hover:text-green-100 transition-colors"
@@ -208,60 +341,6 @@ function MainOS({
           </div>
         </div>
 
-        {/* Start Menu */}
-        {showStartMenu && (
-          <div className="fixed bottom-12 left-0 w-64 bg-green-900 border border-green-500 p-4">
-            <h2 className="text-xl mb-4">SmithOS</h2>
-            <ul>
-              <li
-                className="mb-2 hover:bg-green-700 p-2 cursor-pointer relative"
-                onMouseEnter={() => setShowProgramsSubmenu(true)}
-                onMouseLeave={() => setShowProgramsSubmenu(false)}
-              >
-                Programs
-                {showProgramsSubmenu && (
-                  <div
-                    className="absolute left-full bottom-0 w-48 bg-green-900 border border-green-500 p-2"
-                    style={{ maxHeight: "calc(100vh - 48px)", overflowY: "auto" }}
-                  >
-                    {programs.map((program, index) => (
-                      <div
-                        key={index}
-                        className="p-2 hover:bg-green-700 cursor-pointer flex items-center"
-                        onClick={() => {
-                          program.action()
-                          setShowStartMenu(false)
-                          setShowProgramsSubmenu(false)
-                        }}
-                      >
-                        {program.icon}
-                        <span className="ml-2">{program.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </li>
-              <li
-                className="mb-2 hover:bg-green-700 p-2 cursor-pointer"
-                onClick={() => {
-                  setShowStartMenu(false)
-                  setShowSettings(true)
-                }}
-              >
-                Settings
-              </li>
-              <li
-                className="mb-2 hover:bg-green-700 p-2 cursor-pointer"
-                onClick={() => {
-                  setShowStartMenu(false)
-                  onShutdown()
-                }}
-              >
-                Shut Down
-              </li>
-            </ul>
-          </div>
-        )}
         {showSettings && <SettingsMenu onClose={() => setShowSettings(false)} />}
         {showTerminal && <Terminal onClose={() => setShowTerminal(false)} />}
         {showSystemInfo && <SystemInfoPopup onClose={() => setShowSystemInfo(false)} />}
@@ -275,6 +354,21 @@ function MainOS({
         {showNeuralScan && <NeuralScan onClose={() => setShowNeuralScan(false)} />}
         {showCodeSeer && <CodeSeer onClose={() => setShowCodeSeer(false)} />}
         {showNeoGuard && <NeoGuard onClose={() => setShowNeoGuard(false)} />}
+        {showGames && (
+          <GamesFolder 
+            onClose={() => setShowGames(false)} 
+            onOpenRedPillBluePill={() => setShowRedPillBluePill(true)}
+            onOpenCodeRain={() => setShowCodeRain(true)}
+            showRedPillBluePill={showRedPillBluePill}
+            showCodeRain={showCodeRain}
+          />
+        )}
+        {showRedPillBluePill && (
+          <RedPillBluePill onClose={handleCloseGame} />
+        )}
+        {showCodeRain && (
+          <CodeRain onClose={handleCloseGame} />
+        )}
       </div>
     </div>
   )
@@ -282,13 +376,16 @@ function MainOS({
 
 function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
+  const { display } = useSettingsStore()
+  
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
     const ctx = canvas.getContext("2d")
     if (!ctx) return
+
+    const { r, g, b } = hexToRgb(display.themeColor)
 
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
@@ -320,7 +417,7 @@ function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
             const x = i * 20
             const y = j * 20
             const char = String.fromCharCode(Math.random() * 128)
-            ctx.fillStyle = `rgba(0, 255, 0, ${opacity})`
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`
             ctx.fillText(char, x, y)
           }
         }
@@ -338,7 +435,7 @@ function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
     }
 
     draw()
-  }, [onComplete])
+  }, [onComplete, display.themeColor])
 
   return <canvas ref={canvasRef} className="fixed inset-0 z-50 bg-black" aria-label="Shutdown effect" />
 }
@@ -354,6 +451,48 @@ function PoweredOff({ onRestart }: { onRestart: () => void }) {
         Power On
       </button>
     </div>
+  )
+}
+
+function GamesFolder({ 
+  onClose, 
+  onOpenRedPillBluePill,
+  onOpenCodeRain,
+  showRedPillBluePill,
+  showCodeRain,
+}: { 
+  onClose: () => void
+  onOpenRedPillBluePill: () => void
+  onOpenCodeRain: () => void
+  showRedPillBluePill: boolean
+  showCodeRain: boolean
+}) {
+  return (
+    <ModalWrapper onClose={showRedPillBluePill || showCodeRain ? () => {} : onClose} className="p-6 rounded-lg w-96">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl text-green-500">Games</h2>
+        <button onClick={onClose} className="text-green-500 hover:text-green-400">
+          <X size={24} />
+        </button>
+      </div>
+      <div className="space-y-2">
+        <button
+          onClick={onOpenRedPillBluePill}
+          className="w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <Pill className="mr-2" />
+          Red Pill Blue Pill
+        </button>
+        <button
+          onClick={onOpenCodeRain}
+          className="w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <Code className="mr-2" />
+          Code Rain
+        </button>
+        {/* Add more game buttons here in the future */}
+      </div>
+    </ModalWrapper>
   )
 }
 

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { ModalWrapper } from "@/components/modal-wrapper"
 
 const customScrollbarStyles = `
   .custom-scrollbar::-webkit-scrollbar {
@@ -65,109 +66,107 @@ export function Dashboard({ onClose }: DashboardProps) {
   const totalValue = tokens.reduce((sum, token) => sum + token.value, 0);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-hidden">
-      <div className="bg-green-900 border border-green-500 p-6 rounded-lg w-[80vw] h-[80vh] overflow-y-auto custom-scrollbar">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl text-green-500">Dashboard</h2>
-          <button onClick={onClose} className="text-green-500 hover:text-green-400">
-            <X size={24} />
-          </button>
-        </div>
+    <ModalWrapper onClose={onClose} className="bg-green-900 border border-green-500 p-6 rounded-lg w-[80vw] h-[80vh] overflow-y-auto custom-scrollbar">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl text-green-500">Dashboard</h2>
+        <button onClick={onClose} className="text-green-500 hover:text-green-400">
+          <X size={24} />
+        </button>
+      </div>
 
-        <Card className="bg-green-900/50 border border-green-500 mb-4 w-full">
-          <CardHeader>
-            <CardTitle>Asset Value Over Time</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full h-[200px]">
-              <ChartContainer config={{
-                value: {
-                  label: "Value",
-                  color: "hsl(var(--chart-1))",
-                },
-              }} className="w-full h-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart 
-                    data={assetValueData} 
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    preserveAspectRatio="xMidYMid meet"
-                  >
-                    <XAxis 
-                      dataKey="date" 
-                      stroke="#00ffaa" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={false}
-                    />
-                    <YAxis 
-                      stroke="#00ffaa" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={false}
-                    />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-green-900 border border-green-500 p-2 rounded">
-                              <p className="text-green-300">{`Date: ${label}`}</p>
-                              <p className="text-green-300">{`Value: $${payload[0].value.toLocaleString()}`}</p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#00ffaa" 
-                      fill="#00ffaa" 
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-green-900 border border-green-500 w-full">
-          <CardHeader>
-            <CardTitle>Token Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {tokens.map((token) => (
-                <div 
-                  key={token.symbol} 
-                  className="p-2 rounded bg-green-800 flex justify-between items-center"
+      <Card className="bg-green-900/50 border border-green-500 mb-4 w-full">
+        <CardHeader>
+          <CardTitle>Asset Value Over Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-[200px]">
+            <ChartContainer config={{
+              value: {
+                label: "Value",
+                color: "hsl(var(--chart-1))",
+              },
+            }} className="w-full h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart 
+                  data={assetValueData} 
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                  preserveAspectRatio="xMidYMid meet"
                 >
-                  <div className="flex items-center">
-                    <div 
-                      className={`w-3 h-3 rounded-full mr-2 ${
-                        token.status === 'green' ? 'bg-green-400' : 
-                        token.status === 'yellow' ? 'bg-yellow-400' : 'bg-red-400'
-                      }`}
-                    />
-                    <div>
-                      <p className="font-bold">{token.symbol}</p>
-                      <p className="text-sm text-green-300">{token.name}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg">${token.value.toLocaleString()}</p>
-                    <p className="text-sm text-green-300">Price: ${token.pricePerToken.toLocaleString()}</p>
-                    <p className="text-sm text-green-300">Security Score: {token.securityScore}</p>
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="var(--chart-color)" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={false}
+                  />
+                  <YAxis 
+                    stroke="var(--chart-color)" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="bg-green-900 border border-green-500 p-2 rounded">
+                            <p className="text-green-300">{`Date: ${label}`}</p>
+                            <p className="text-green-300">{`Value: $${payload[0].value.toLocaleString()}`}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke="var(--chart-color)" 
+                    fill="var(--chart-color)" 
+                    fillOpacity={0.2}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-green-900 border border-green-500 w-full">
+        <CardHeader>
+          <CardTitle>Token Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {tokens.map((token) => (
+              <div 
+                key={token.symbol} 
+                className="p-2 rounded bg-green-800 flex justify-between items-center"
+              >
+                <div className="flex items-center">
+                  <div 
+                    className={`w-3 h-3 rounded-full mr-2 ${
+                      token.status === 'green' ? 'bg-green-400' : 
+                      token.status === 'yellow' ? 'bg-yellow-400' : 'bg-red-400'
+                    }`}
+                  />
+                  <div>
+                    <p className="font-bold">{token.symbol}</p>
+                    <p className="text-sm text-green-300">{token.name}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                <div className="text-right">
+                  <p className="text-lg">${token.value.toLocaleString()}</p>
+                  <p className="text-sm text-green-300">Price: ${token.pricePerToken.toLocaleString()}</p>
+                  <p className="text-sm text-green-300">Security Score: {token.securityScore}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </ModalWrapper>
   );
 }
 

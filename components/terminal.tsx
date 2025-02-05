@@ -1,17 +1,47 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { X } from 'lucide-react'
+import { useSettingsStore } from '../stores/useSettingsStore'
+import { ModalWrapper } from '@/components/modal-wrapper'
 
 interface TerminalProps {
   onClose: () => void
 }
 
 export function Terminal({ onClose }: TerminalProps) {
+  const { terminal } = useSettingsStore()
   const [input, setInput] = useState('')
   const [output, setOutput] = useState<string[]>(['Welcome to SmithOS Terminal. Type "help" for available commands.'])
   const [isChatActive, setIsChatActive] = useState(false)
   const [isListenActive, setIsListenActive] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const outputRef = useRef<HTMLDivElement>(null)
+
+  const terminalStyle = {
+    fontFamily: terminal.fontFamily,
+    fontSize: `${terminal.fontSize}px`,
+  }
+
+  const blinkStyles = `
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .terminal-input input {
+      caret-color: transparent;  /* Hide the native cursor */
+    }
+    .terminal-input input::selection {
+      background: rgba(255, 255, 255, 0.3);  /* Custom selection color */
+    }
+    .terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background-color: currentColor;
+      animation: blink ${terminal.blinkRate}ms step-end infinite;
+      vertical-align: middle;
+      margin-left: 1px;
+    }
+  `
 
   useEffect(() => {
     if (inputRef.current) {
@@ -102,40 +132,47 @@ export function Terminal({ onClose }: TerminalProps) {
   }
 
   const getPrompt = () => {
-    if (isChatActive) return 'chat> '
-    if (isListenActive) return 'listen> '
-    return '> '
+    if (isChatActive) return terminal.promptStyle + 'chat> '
+    if (isListenActive) return terminal.promptStyle + 'listen> '
+    return terminal.promptStyle
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-black border border-green-500 w-full max-w-2xl h-96 flex flex-col rounded-lg overflow-hidden">
-        <div className="bg-green-900 p-2 flex justify-between items-center">
-          <span className="text-green-100 font-bold">SmithOS Terminal</span>
-          <button onClick={onClose} className="text-green-100 hover:text-white">
-            <X size={20} />
+    <ModalWrapper onClose={onClose} className="bg-black/90 p-4 rounded-lg w-[90vw] max-w-4xl h-[80vh]">
+      <div className="h-full flex flex-col">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+          <button onClick={onClose} className="text-green-500 hover:text-green-400">
+            <X size={16} />
           </button>
         </div>
-        <div ref={outputRef} className="flex-1 p-4 overflow-y-auto font-mono text-green-500">
+        <div className="flex-1 p-4 overflow-y-auto text-green-500" style={terminalStyle}>
           {output.map((line, index) => (
-            <div key={index}>{line}</div>
+            <div key={index}>
+              {line.startsWith('>') ? getPrompt() + line.slice(2) : line}
+            </div>
           ))}
         </div>
         <form onSubmit={handleInputSubmit} className="p-2 border-t border-green-500">
-          <div className="flex items-center">
+          <div className="flex items-center" style={terminalStyle}>
             <span className="text-green-500 mr-2">{getPrompt()}</span>
             <input
               ref={inputRef}
               type="text"
               value={input}
               onChange={handleInputChange}
-              className="w-full bg-black text-green-500 font-mono p-2 focus:outline-none"
+              className="w-full bg-black text-green-500 p-2 focus:outline-none"
+              style={terminalStyle}
               placeholder={isChatActive ? "Chat with Agent Smith..." : isListenActive ? "Listening..." : "Enter command..."}
             />
           </div>
         </form>
       </div>
-    </div>
+    </ModalWrapper>
   )
 }
 
