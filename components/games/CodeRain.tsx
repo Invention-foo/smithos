@@ -21,7 +21,7 @@ export function CodeRain({ onClose }: CodeRainProps) {
   const [characters, setCharacters] = useState<FallingCharacter[]>([])
   const [currentInput, setCurrentInput] = useState("")
   const [level, setLevel] = useState(1)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [strikes, setStrikes] = useState(0)
   const frameRef = useRef<number>()
   const gameAreaWidth = 400
   const gameAreaHeight = 300
@@ -47,17 +47,36 @@ export function CodeRain({ onClose }: CodeRainProps) {
       const char = e.key.toLowerCase()
       if (char.length === 1) {
         setCurrentInput(char)
-        checkCollision(char)
+        
+        // Find all matching characters and sort by Y position (closest to bottom first)
+        const matchingChars = characters
+          .filter(c => c.char === char)
+          .sort((a, b) => b.y - a.y)
+        
+        if (matchingChars.length > 0) {
+          setScore(s => s + 1)
+          // Remove only the first matching character (closest to bottom)
+          setCharacters(prev => prev.filter(c => c.id !== matchingChars[0].id))
+        } else {
+          setStrikes(prev => {
+            const newStrikes = prev + 1
+            if (newStrikes >= 3) {
+              setGameOver(true)
+            }
+            return newStrikes
+          })
+        }
       }
     }
 
     window.addEventListener('keypress', handleKeyPress)
     return () => window.removeEventListener('keypress', handleKeyPress)
-  }, [characters, gameOver])
+  }, [gameOver, characters])
 
   useEffect(() => {
     if (!gameOver) {
       const params = getGameParams(level)
+      let lastFrameY = new Map() // Track Y positions from last frame
       
       const spawnInterval = setInterval(() => {
         if (Math.random() < params.spawnRate) {
@@ -79,9 +98,25 @@ export function CodeRain({ onClose }: CodeRainProps) {
             y: char.y + char.speed
           }))
           
-          if (updated.some(char => char.y > gameAreaHeight - 20)) {
-            setGameOver(true)
-            return prev
+          // Check for characters that just crossed the bottom boundary
+          const bottomHitChars = updated.filter(char => {
+            const lastY = lastFrameY.get(char.id) ?? 0
+            const crossedBottom = lastY <= gameAreaHeight - 20 && char.y > gameAreaHeight - 20
+            return crossedBottom
+          })
+          
+          // Update last frame positions
+          lastFrameY.clear()
+          updated.forEach(char => lastFrameY.set(char.id, char.y))
+          
+          if (bottomHitChars.length > 0) {
+            setStrikes(prev => {
+              const newStrikes = prev + 1
+              if (newStrikes >= 3) {
+                setGameOver(true)
+              }
+              return newStrikes
+            })
           }
           
           return updated.filter(char => char.y <= gameAreaHeight - 20)
@@ -101,22 +136,13 @@ export function CodeRain({ onClose }: CodeRainProps) {
     }
   }, [gameOver, level])
 
-  const checkCollision = (input: string) => {
-    setCharacters(prev => {
-      const charIndex = prev.findIndex(char => char.char === input)
-      if (charIndex !== -1) {
-        setScore(s => s + 1)
-        return prev.filter((_, i) => i !== charIndex)
-      }
-      return prev
-    })
-  }
-
   const resetGame = () => {
     setScore(0)
     setGameOver(false)
     setCharacters([])
     setCurrentInput("")
+    setLevel(1)
+    setStrikes(0)
   }
 
   const getGameParams = (currentLevel: number) => {
@@ -147,7 +173,18 @@ export function CodeRain({ onClose }: CodeRainProps) {
       <div className="text-center mb-4">
         <p className="text-green-300 mb-2">Score: {score}</p>
         <p className="text-green-300 mb-2">Level: {level}</p>
-        <p className="text-green-300">High Score: {highScore}</p>
+        <p className="text-green-300 mb-2">High Score: {highScore}</p>
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-green-300">Strikes:</span>
+          {[...Array(3)].map((_, i) => (
+            <span
+              key={i}
+              className={`inline-block w-3 h-3 rounded-full ${
+                i < strikes ? 'bg-red-500' : 'bg-green-700'
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       <div 
@@ -171,7 +208,10 @@ export function CodeRain({ onClose }: CodeRainProps) {
 
       {gameOver && (
         <div className="text-center mt-4">
-          <p className="text-red-500 mb-4">Game Over!</p>
+          <p className="text-red-500 mb-4">
+            Game Over!
+            {strikes >= 3 ? " Too many misses!" : " Character reached the bottom!"}
+          </p>
           <button 
             onClick={resetGame}
             className="bg-green-700 hover:bg-green-600 text-white px-6 py-3 rounded"
@@ -183,6 +223,7 @@ export function CodeRain({ onClose }: CodeRainProps) {
 
       <div className="text-center mt-4 text-green-300">
         <p>Type the falling letters before they hit the bottom!</p>
+        <p>Three strikes and you're out!</p>
         {currentInput && <p>Last typed: {currentInput}</p>}
       </div>
     </ModalWrapper>
