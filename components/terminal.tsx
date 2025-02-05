@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { useSettingsStore } from '../stores/useSettingsStore'
+import { ModalWrapper } from '@/components/modal-wrapper'
 
 interface TerminalProps {
   onClose: () => void
@@ -137,16 +138,19 @@ export function Terminal({ onClose }: TerminalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <style>{blinkStyles}</style>
-      <div className="bg-black border border-green-500 w-full max-w-2xl h-96 flex flex-col rounded-lg overflow-hidden">
-        <div className="bg-green-900 p-2 flex justify-between items-center">
-          <span className="text-green-100 font-bold">SmithOS Terminal</span>
-          <button onClick={onClose} className="text-green-100 hover:text-white">
-            <X size={20} />
+    <ModalWrapper onClose={onClose} className="bg-black/90 p-4 rounded-lg w-[90vw] max-w-4xl h-[80vh]">
+      <div className="h-full flex flex-col">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+          <button onClick={onClose} className="text-green-500 hover:text-green-400">
+            <X size={16} />
           </button>
         </div>
-        <div ref={outputRef} className="flex-1 p-4 overflow-y-auto text-green-500" style={terminalStyle}>
+        <div className="flex-1 p-4 overflow-y-auto text-green-500" style={terminalStyle}>
           {output.map((line, index) => (
             <div key={index}>
               {line.startsWith('>') ? getPrompt() + line.slice(2) : line}
@@ -168,7 +172,7 @@ export function Terminal({ onClose }: TerminalProps) {
           </div>
         </form>
       </div>
-    </div>
+    </ModalWrapper>
   )
 }
 
