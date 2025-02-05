@@ -77,6 +77,7 @@ export function useThemeColor() {
       
       /* Border colors */
       .border-green-500 { border-color: var(--theme-color) !important; }
+      .border-green-700 { border-color: color-mix(in srgb, var(--theme-color) 60%, black) !important; }
       
       /* Matrix background effect */
       .matrix-bg::before {

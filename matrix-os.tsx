@@ -15,6 +15,9 @@ import {
   Shield,
   Search,
   ChevronRight,
+  Gamepad2,
+  X,
+  Pill,
 } from "lucide-react"
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
@@ -32,6 +35,8 @@ import { useSettingsStore } from "@/stores/useSettingsStore"
 import { hexToRgb } from "@/hooks/useThemeColor"
 import { connectWallet } from "@/lib/wallet"
 import { MenuWrapper } from '@/components/menu-wrapper'
+import { RedPillBluePill } from "@/components/games/RedPillBluePill"
+import { ModalWrapper } from '@/components/modal-wrapper'
 
 
 export default function MatrixOS() {
@@ -135,6 +140,8 @@ function MainOS({
   const [showNeuralScan, setShowNeuralScan] = useState(false)
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
+  const [showGames, setShowGames] = useState(false)
+  const [showRedPillBluePill, setShowRedPillBluePill] = useState(false)
   const { isConnected: isWalletConnected, address } = useWallet()
   const startButtonRef = useRef<HTMLButtonElement>(null)
   const programsButtonRef = useRef<HTMLButtonElement>(null)
@@ -156,6 +163,11 @@ function MainOS({
     return () => clearInterval(timer)
   }, [])
 
+  const handleCloseGame = () => {
+    setShowRedPillBluePill(false)
+    setShowGames(false)
+  }
+
   return (
     <div className="bg-black text-green-500 min-h-screen font-mono relative overflow-hidden" style={{ opacity }}>
       <div className="absolute inset-0 matrix-bg"></div>
@@ -175,6 +187,7 @@ function MainOS({
           <div className="col-start-4 flex flex-col items-end">
             <DesktopIcon icon={<Monitor />} label="This Computer" onClick={() => setShowSystemInfo(true)} />
             <DesktopIcon icon={<Folder />} label="Documents" onClick={() => setShowDocuments(true)} />
+            <DesktopIcon icon={<Gamepad2 />} label="Games" onClick={() => setShowGames(true)} />
           </div>
         </div>
 
@@ -348,6 +361,16 @@ function MainOS({
         {showNeuralScan && <NeuralScan onClose={() => setShowNeuralScan(false)} />}
         {showCodeSeer && <CodeSeer onClose={() => setShowCodeSeer(false)} />}
         {showNeoGuard && <NeoGuard onClose={() => setShowNeoGuard(false)} />}
+        {showGames && (
+          <GamesFolder 
+            onClose={() => setShowGames(false)} 
+            onOpenRedPillBluePill={() => setShowRedPillBluePill(true)}
+            showRedPillBluePill={showRedPillBluePill}
+          />
+        )}
+        {showRedPillBluePill && (
+          <RedPillBluePill onClose={handleCloseGame} />
+        )}
       </div>
     </div>
   )
@@ -430,6 +453,37 @@ function PoweredOff({ onRestart }: { onRestart: () => void }) {
         Power On
       </button>
     </div>
+  )
+}
+
+function GamesFolder({ 
+  onClose, 
+  onOpenRedPillBluePill, 
+  showRedPillBluePill 
+}: { 
+  onClose: () => void; 
+  onOpenRedPillBluePill: () => void;
+  showRedPillBluePill: boolean;
+}) {
+  return (
+    <ModalWrapper onClose={showRedPillBluePill ? () => {} : onClose} className="p-6 rounded-lg w-96">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl text-green-500">Games</h2>
+        <button onClick={onClose} className="text-green-500 hover:text-green-400">
+          <X size={24} />
+        </button>
+      </div>
+      <div className="space-y-2">
+        <button
+          onClick={onOpenRedPillBluePill}
+          className="w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <Pill className="mr-2" />
+          Red Pill Blue Pill
+        </button>
+        {/* Add more game buttons here in the future */}
+      </div>
+    </ModalWrapper>
   )
 }
 
