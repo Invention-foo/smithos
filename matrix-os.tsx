@@ -37,6 +37,7 @@ import { connectWallet } from "@/lib/wallet"
 import { MenuWrapper } from '@/components/menu-wrapper'
 import { RedPillBluePill } from "@/components/games/RedPillBluePill"
 import { ModalWrapper } from '@/components/modal-wrapper'
+import { CodeRain } from "@/components/games/CodeRain"
 
 
 export default function MatrixOS() {
@@ -142,6 +143,7 @@ function MainOS({
   const [showNeoGuard, setShowNeoGuard] = useState(false)
   const [showGames, setShowGames] = useState(false)
   const [showRedPillBluePill, setShowRedPillBluePill] = useState(false)
+  const [showCodeRain, setShowCodeRain] = useState(false)
   const { isConnected: isWalletConnected, address } = useWallet()
   const startButtonRef = useRef<HTMLButtonElement>(null)
   const programsButtonRef = useRef<HTMLButtonElement>(null)
@@ -165,6 +167,7 @@ function MainOS({
 
   const handleCloseGame = () => {
     setShowRedPillBluePill(false)
+    setShowCodeRain(false)
     setShowGames(false)
   }
 
@@ -365,11 +368,16 @@ function MainOS({
           <GamesFolder 
             onClose={() => setShowGames(false)} 
             onOpenRedPillBluePill={() => setShowRedPillBluePill(true)}
+            onOpenCodeRain={() => setShowCodeRain(true)}
             showRedPillBluePill={showRedPillBluePill}
+            showCodeRain={showCodeRain}
           />
         )}
         {showRedPillBluePill && (
           <RedPillBluePill onClose={handleCloseGame} />
+        )}
+        {showCodeRain && (
+          <CodeRain onClose={handleCloseGame} />
         )}
       </div>
     </div>
@@ -458,15 +466,19 @@ function PoweredOff({ onRestart }: { onRestart: () => void }) {
 
 function GamesFolder({ 
   onClose, 
-  onOpenRedPillBluePill, 
-  showRedPillBluePill 
+  onOpenRedPillBluePill,
+  onOpenCodeRain,
+  showRedPillBluePill,
+  showCodeRain,
 }: { 
-  onClose: () => void; 
-  onOpenRedPillBluePill: () => void;
-  showRedPillBluePill: boolean;
+  onClose: () => void
+  onOpenRedPillBluePill: () => void
+  onOpenCodeRain: () => void
+  showRedPillBluePill: boolean
+  showCodeRain: boolean
 }) {
   return (
-    <ModalWrapper onClose={showRedPillBluePill ? () => {} : onClose} className="p-6 rounded-lg w-96">
+    <ModalWrapper onClose={showRedPillBluePill || showCodeRain ? () => {} : onClose} className="p-6 rounded-lg w-96">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl text-green-500">Games</h2>
         <button onClick={onClose} className="text-green-500 hover:text-green-400">
@@ -480,6 +492,13 @@ function GamesFolder({
         >
           <Pill className="mr-2" />
           Red Pill Blue Pill
+        </button>
+        <button
+          onClick={onOpenCodeRain}
+          className="w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <Code className="mr-2" />
+          Code Rain
         </button>
         {/* Add more game buttons here in the future */}
       </div>
