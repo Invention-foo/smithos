@@ -51,6 +51,20 @@ class SIWXLocalStorage extends LocalStorage {
         throw new Error("Failed to create auth session");
       }
 
+      const { error: upsertError } = await supabase.from("smith_users").upsert(
+        {
+          wallet_address: accountAddress,
+          wallet_provider: chainType,
+        },
+        {
+          onConflict: "wallet_address",
+        }
+      );
+
+      if (upsertError) {
+        console.error("Error upserting wallet address:", upsertError.message);
+      }
+
       await this.set([session]);
     } catch (error) {
       console.error("Error adding session:", error);
