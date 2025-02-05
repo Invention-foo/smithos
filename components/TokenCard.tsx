@@ -11,13 +11,13 @@ const TokenCard = ({ token }: { token: Token }) => {
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case "green":
-        return "w-1 h-1 rounded-full bg-green-400";
+        return "w-3 h-3 rounded-full mr-2 bg-green-400";
       case "yellow":
-        return "w-1 h-1 rounded-full bg-yellow-400";
+        return "w-3 h-3 rounded-full mr-2 bg-yellow-400";
       case "red":
-        return "w-1 h-1 rounded-full bg-red-400";
+        return "w-3 h-3 rounded-full mr-2 bg-red-400";
       default:
-        return "w-1 h-1 rounded-full bg-gray-400";
+        return "w-3 h-3 rounded-full mr-2 bg-gray-400";
     }
   };
   const color = getStatusColor(token.status);
@@ -35,8 +35,6 @@ const TokenCard = ({ token }: { token: Token }) => {
                     aria-label="View security audit"
                   >
                     <div className="flex flex-col gap-1">
-                      <div className={color}></div>
-                      <div className={color}></div>
                       <div className={color}></div>
                     </div>
                   </button>
