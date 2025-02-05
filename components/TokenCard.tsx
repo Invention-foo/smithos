@@ -2,10 +2,11 @@ import { Token } from "@/hooks/use-token-holdings";
 import React from "react";
 import { Card } from "@/components/ui/card";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TokenCard = ({ token }: { token: Token }) => {
   const getStatusColor = (status: string | undefined) => {
@@ -28,23 +29,22 @@ const TokenCard = ({ token }: { token: Token }) => {
         <div className="flex items-center">
           {token.status && (
             <div className="mr-3">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    className="relative group"
-                    aria-label="View security audit"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <div className={color}></div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="relative group cursor-pointer">
+                      <div className="flex flex-col gap-1">
+                        <div className={color}></div>
+                      </div>
                     </div>
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent className="bg-green-900 border border-green-500 p-3 rounded-lg shadow-lg z-50 min-w-[200px] max-w-[300px]">
-                  <div className="text-sm text-green-100 whitespace-pre-wrap">
-                    {token.audit_report || "No audit report available"}
-                  </div>
-                </PopoverContent>
-              </Popover>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-green-900 border border-green-500 p-3 rounded-lg shadow-lg z-50 min-w-[200px] max-w-[300px]">
+                    <div className="text-sm text-green-100 whitespace-pre-wrap">
+                      {token.audit_report || "No audit report available"}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
           <div>
