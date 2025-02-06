@@ -13,6 +13,7 @@ export function Terminal({ onClose }: TerminalProps) {
   const [output, setOutput] = useState<string[]>(['Welcome to SmithOS Terminal. Type "help" for available commands.'])
   const [isChatActive, setIsChatActive] = useState(false)
   const [isListenActive, setIsListenActive] = useState(false)
+  const [userHasScrolled, setUserHasScrolled] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const outputRef = useRef<HTMLDivElement>(null)
 
@@ -49,11 +50,19 @@ export function Terminal({ onClose }: TerminalProps) {
     }
   }, [])
 
-  useEffect(() => {
+  const handleScroll = () => {
     if (outputRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = outputRef.current
+      const isScrolledToBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10
+      setUserHasScrolled(!isScrolledToBottom)
+    }
+  }
+
+  useEffect(() => {
+    if (outputRef.current && !userHasScrolled) {
       outputRef.current.scrollTop = outputRef.current.scrollHeight
     }
-  }, [output])
+  }, [output, userHasScrolled])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value)
@@ -150,7 +159,12 @@ export function Terminal({ onClose }: TerminalProps) {
             <X size={16} />
           </button>
         </div>
-        <div className="flex-1 p-4 overflow-y-auto text-green-500" style={terminalStyle}>
+        <div 
+          ref={outputRef}
+          onScroll={handleScroll}
+          className="flex-1 p-4 overflow-y-auto text-green-500" 
+          style={terminalStyle}
+        >
           {output.map((line, index) => (
             <div key={index}>
               {line.startsWith('>') ? getPrompt() + line.slice(2) : line}
