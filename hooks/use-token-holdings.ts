@@ -137,7 +137,7 @@ export function useTokenHoldings() {
   const clearTokenHoldings = () => {
     setTokens([]);
     if (address) {
-      localStorage.removeItem(`tokenHoldings-${address}`);
+      localStorage.removeItem(`tokens-${address}-${caipNetworkId}`);
     }
   };
 
