@@ -11,12 +11,15 @@ import { AuditResults } from '@/types/audit';
 import { auditToken } from './actions';
 import { LoadingScreen } from './components/loading-screen';
 import { ModalWrapper } from '@/components/modal-wrapper';
+import { useWallet } from '@/hooks/use-wallet';
+import { connectWallet } from '@/lib/wallet';
 
 interface CodeSeerProps {
   onClose: () => void;
 }
 
 export function CodeSeer({ onClose }: CodeSeerProps) {
+  const { isConnected } = useWallet();
   const [contractAddress, setContractAddress] = useState('');
   const [blockchain, setBlockchain] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -89,65 +92,83 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="mb-6">
-        <div className="flex space-x-4">
-          <input
-            type="text"
-            value={contractAddress}
-            onChange={(e) => handleAddressChange(e.target.value)}
-            placeholder="Enter contract address"
-            className="flex-grow bg-green-800 text-green-100 p-2 rounded border border-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
-          <select
-            value={blockchain}
-            onChange={(e) => setBlockchain(e.target.value)}
-            className="w-1/3 bg-green-800 text-green-100 p-2 rounded border border-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
-          >
-            <option value="">Select blockchain</option>
-            <option value="ethereum">Ethereum</option>
-          </select>
+      {!isConnected ? (
+        <div className="flex flex-col items-center justify-center space-y-4 p-12 bg-green-800/30 rounded-lg border border-green-700">
+          <AlertTriangle className="text-yellow-500 w-12 h-12" />
+          <h3 className="text-xl font-semibold text-green-300">Connect Wallet Required</h3>
+          <p className="text-green-400 text-center max-w-md">
+            Please connect your wallet to use CodeSeer. This helps us prevent spam and maintain service quality.
+          </p>
           <button
-            type="submit"
-            disabled={!!addressError || !contractAddress || isLoading}
-            className="bg-green-700 text-green-100 px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+            onClick={connectWallet}
+            className="px-6 py-2 bg-green-700 text-green-100 rounded-lg hover:bg-green-600 transition-colors"
           >
-            {isLoading ? 'Analyzing...' : 'Analyze'}
+            Connect Wallet
           </button>
         </div>
-        {addressError && (
-          <p className="text-red-400 text-sm mt-2">{addressError}</p>
-        )}
-      </form>
-
-      {error && (
-        <div className="bg-red-900/50 border border-red-500 p-4 rounded-lg mb-6">
-          <p className="text-red-400">{error}</p>
-        </div>
-      )}
-
-      {isLoading ? (
-        <LoadingScreen />
       ) : (
-        auditResults && (
-          <div className="space-y-6">
-            {auditResults.isScam && (
-              <div className="bg-red-900/50 border border-red-500 p-4 rounded-lg mb-6">
-                <p className="text-red-400 font-bold">⚠️ Warning: This contract contains unresolvable malicious patterns!</p>
-              </div>
+        <>
+          <form onSubmit={handleSubmit} className="mb-6">
+            <div className="flex space-x-4">
+              <input
+                type="text"
+                value={contractAddress}
+                onChange={(e) => handleAddressChange(e.target.value)}
+                placeholder="Enter contract address"
+                className="flex-grow bg-green-800 text-green-100 p-2 rounded border border-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
+              />
+              <select
+                value={blockchain}
+                onChange={(e) => setBlockchain(e.target.value)}
+                className="w-1/3 bg-green-800 text-green-100 p-2 rounded border border-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
+              >
+                <option value="">Select blockchain</option>
+                <option value="ethereum">Ethereum</option>
+              </select>
+              <button
+                type="submit"
+                disabled={!!addressError || !contractAddress || isLoading}
+                className="bg-green-700 text-green-100 px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? 'Analyzing...' : 'Analyze'}
+              </button>
+            </div>
+            {addressError && (
+              <p className="text-red-400 text-sm mt-2">{addressError}</p>
             )}
-            <RiskAssessment 
-              data={auditResults.riskAssessment}
-              codeAudit={auditResults.codeAudit}
-              maliciousPatterns={auditResults.maliciousPatterns}
-            />
-            <CodeAudit data={auditResults.codeAudit} />
-            <MaliciousPatterns data={auditResults.maliciousPatterns} />
-            <Tokenomics 
-              data={auditResults.tokenomics} 
-              liveAudit={auditResults.liveAudit}
-            />
-          </div>
-        )
+          </form>
+
+          {error && (
+            <div className="bg-red-900/50 border border-red-500 p-4 rounded-lg mb-6">
+              <p className="text-red-400">{error}</p>
+            </div>
+          )}
+
+          {isLoading ? (
+            <LoadingScreen />
+          ) : (
+            auditResults && (
+              <div className="space-y-6">
+                {auditResults.isScam && (
+                  <div className="bg-red-900/50 border border-red-500 p-4 rounded-lg mb-6">
+                    <p className="text-red-400 font-bold">⚠️ Warning: This contract contains unresolvable malicious patterns!</p>
+                  </div>
+                )}
+                <RiskAssessment 
+                  data={auditResults.riskAssessment}
+                  codeAudit={auditResults.codeAudit}
+                  maliciousPatterns={auditResults.maliciousPatterns}
+                />
+                <CodeAudit data={auditResults.codeAudit} />
+                <MaliciousPatterns data={auditResults.maliciousPatterns} />
+                <Tokenomics 
+                  data={auditResults.tokenomics} 
+                  liveAudit={auditResults.liveAudit}
+                />
+              </div>
+            )
+          )}
+        </>
       )}
     </ModalWrapper>
   );
