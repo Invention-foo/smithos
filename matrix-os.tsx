@@ -6,7 +6,6 @@ import {
   Monitor,
   Folder,
   TerminalIcon,
-  Clock,
   MessageCircle,
   Twitter,
   Power,
@@ -38,6 +37,7 @@ import { MenuWrapper } from '@/components/menu-wrapper'
 import { RedPillBluePill } from "@/components/games/RedPillBluePill"
 import { ModalWrapper } from '@/components/modal-wrapper'
 import { CodeRain } from "@/components/games/CodeRain"
+import Clock from "./components/Clock"
 
 
 export default function MatrixOS() {
@@ -129,7 +129,6 @@ function MainOS({
   opacity: number
   onShutdown: () => void
 }) {
-  const [time, setTime] = useState(new Date())
   const [showStartMenu, setShowStartMenu] = useState(false)
   const [showProgramsMenu, setShowProgramsMenu] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
@@ -159,11 +158,6 @@ function MainOS({
   const handleMouseLeave = () => {
     setShowProgramsMenu(false)
   }
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
 
   const handleCloseGame = () => {
     setShowRedPillBluePill(false)
@@ -266,7 +260,6 @@ function MainOS({
                       <button
                         className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
                         onClick={() => {
-                          setShowTokenInsight(true);
                           setShowStartMenu(false);
                         }}
                       >
@@ -344,10 +337,7 @@ function MainOS({
                 <span className="text-yellow-500">Connect Wallet</span>
               )}
             </button>
-            <div className="flex items-center space-x-2">
-              <Clock className="w-5 h-5" />
-              <span>{time.toLocaleTimeString()}</span>
-            </div>
+            <Clock />
           </div>
         </div>
 

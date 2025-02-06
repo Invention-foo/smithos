@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Moralis from "moralis";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
+import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
 
 // address: '0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511', ETH: to test
 // address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", SOL: to test
@@ -18,6 +19,8 @@ export interface Token {
   balanceFormatted: string;
   usdPrice?: number;
   usdValue?: number;
+  status?: string;
+  audit_report?: string;
 }
 
 export function useTokenHoldings() {
@@ -61,7 +64,10 @@ export function useTokenHoldings() {
               excludeUnverifiedContracts: true,
               maxTokenInactivity: 30,
             });
-
+          
+          const tokenAddresses = response.result.map(token => token.tokenAddress?.toJSON()); // need to apply .toJSON() because the tokenAddress is a EVMAddress object
+          const securityStatuses = await updateOrGetTokenSecurityStatus(tokenAddresses as string[], chainId);
+          
           formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
             (token): Token => ({
               symbol: token.symbol || "Unknown",
@@ -70,6 +76,8 @@ export function useTokenHoldings() {
               balanceFormatted: token.balanceFormatted,
               usdPrice: Number(token.usdPrice),
               usdValue: Number(token.usdValue),
+              status: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.status || 'unknown',
+              audit_report: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.audit_report || 'unknown',
             })
           ).sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
         } else if (caipNetworkId.startsWith("solana")) {
