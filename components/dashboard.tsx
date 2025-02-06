@@ -5,6 +5,12 @@ import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "rec
 import { ChartContainer } from "@/components/ui/chart"
 import { ModalWrapper } from "@/components/modal-wrapper"
 import { useTokenHoldings } from "@/hooks/use-token-holdings";
+import {
+  Tooltip as UiTooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const customScrollbarStyles = `
   .custom-scrollbar::-webkit-scrollbar {
@@ -140,13 +146,28 @@ export function Dashboard({ onClose }: DashboardProps) {
                     className="p-2 rounded bg-green-800 flex justify-between items-center"
                   >
                     <div className="flex items-center">
-                      <div 
-                        className={`w-3 h-3 rounded-full mr-2 ${
-                          token.status === 'green' ? 'bg-green-400' : 
-                          token.status === 'yellow' ? 'bg-yellow-400' : 
-                          token.status === 'red' ? 'bg-red-400' : 'bg-gray-400'
-                        }`}
-                      />
+                      <TooltipProvider>
+                        <UiTooltip>
+                          <TooltipTrigger asChild>
+                            <div className="relative group cursor-pointer">
+                              <div className="flex flex-col gap-1">
+                                <div 
+                                  className={`w-3 h-3 rounded-full mr-2 ${
+                                    token.status === 'green' ? 'bg-green-400' : 
+                                    token.status === 'yellow' ? 'bg-yellow-400' : 
+                                    token.status === 'red' ? 'bg-red-400' : 'bg-gray-400'
+                                  }`}
+                                />
+                              </div>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-green-900 border border-green-500 p-3 rounded-lg shadow-lg z-50 min-w-[200px] max-w-[300px]">
+                            <div className="text-sm text-green-100 whitespace-pre-wrap">
+                              {token.audit_report || "No audit report available"}
+                            </div>
+                          </TooltipContent>
+                        </UiTooltip>
+                      </TooltipProvider>
                       <div>
                         <p className="font-bold">{token.symbol}</p>
                         <p className="text-sm text-green-300">{token.name}</p>
