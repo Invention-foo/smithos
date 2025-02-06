@@ -216,14 +216,28 @@ export class ContractAuditService {
 
     // Process new audits
     for (const contract of contractsToAudit) {
-      const auditResult = await this.auditContract(
-        contract.address,
-        contract.blockchain,
-        userKey,
-        'BATCH',
-        true // Skip rate limit check since we already did it
-      )
-      results[contract.address] = auditResult
+      const { limited, waitTime } = isRateLimited(userKey, 'BATCH')
+      if (limited) {
+        results[contract.address] = {
+          error: `Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`
+        } as any
+        continue
+      }
+
+      try {
+        const auditResult = await this.auditContract(
+          contract.address,
+          contract.blockchain,
+          userKey,
+          'BATCH',
+          true  // Skip rate limit check in auditContract
+        )
+        results[contract.address] = auditResult
+      } catch (error) {
+        results[contract.address] = {
+          error: error instanceof Error ? error.message : 'Audit failed'
+        } as any
+      }
     }
 
     return results
