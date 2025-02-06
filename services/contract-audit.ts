@@ -114,13 +114,16 @@ export class ContractAuditService {
   static async auditContract(
     contractAddress: string,
     blockchain: string,
-    userKey: string, // wallet address or other unique identifier
-    type: 'CODESEER' | 'BATCH' = 'CODESEER'
+    userKey: string,
+    type: 'CODESEER' | 'BATCH' = 'CODESEER',
+    skipRateLimit = false
   ): Promise<AuditResults> {
     // Check rate limit
-    const { limited, waitTime } = isRateLimited(userKey, type)
-    if (limited) {
-      throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+    if (!skipRateLimit) {
+      const { limited, waitTime } = isRateLimited(userKey, type)
+      if (limited) {
+        throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+      }
     }
 
     try {
@@ -213,26 +216,14 @@ export class ContractAuditService {
 
     // Process new audits
     for (const contract of contractsToAudit) {
-      if (isRateLimited(userKey, 'BATCH')) {
-        results[contract.address] = {
-          error: 'Rate limit exceeded'
-        } as any
-        continue
-      }
-
-      try {
-        const auditResult = await this.auditContract(
-          contract.address,
-          contract.blockchain,
-          userKey,
-          'BATCH'
-        )
-        results[contract.address] = auditResult
-      } catch (error) {
-        results[contract.address] = {
-          error: error instanceof Error ? error.message : 'Audit failed'
-        } as any
-      }
+      const auditResult = await this.auditContract(
+        contract.address,
+        contract.blockchain,
+        userKey,
+        'BATCH',
+        true // Skip rate limit check since we already did it
+      )
+      results[contract.address] = auditResult
     }
 
     return results
