@@ -21,6 +21,7 @@ export interface Token {
   usdValue?: number;
   status?: string;
   audit_report?: string;
+  price24hrPercentChange?: number;
 }
 
 export function useTokenHoldings() {
@@ -36,9 +37,9 @@ export function useTokenHoldings() {
         setTokens([]);
         setIsLoading(false);
         return;
-      }
-
-      const cachedData = localStorage.getItem(`tokenHoldings-${address}`);
+      } 
+      const cacheKey = `tokens-${address}-${caipNetworkId}`;
+      const cachedData = localStorage.getItem(cacheKey);
       if (cachedData) {
         const { tokens: cachedTokens, timestamp } = JSON.parse(cachedData);
         const now = new Date().getTime();
@@ -64,10 +65,9 @@ export function useTokenHoldings() {
               excludeUnverifiedContracts: true,
               maxTokenInactivity: 30,
             });
-          
           const tokenAddresses = response.result.map(token => token.tokenAddress?.toJSON()); // need to apply .toJSON() because the tokenAddress is a EVMAddress object
           const securityStatuses = await updateOrGetTokenSecurityStatus(tokenAddresses as string[], chainId);
-          
+
           formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
             (token): Token => ({
               symbol: token.symbol || "Unknown",
@@ -76,6 +76,7 @@ export function useTokenHoldings() {
               balanceFormatted: token.balanceFormatted,
               usdPrice: Number(token.usdPrice),
               usdValue: Number(token.usdValue),
+              price24hrPercentChange: Number(token.usdPrice24hrPercentChange),
               status: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.status || 'unknown',
               audit_report: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.audit_report || 'unknown',
             })
@@ -115,7 +116,7 @@ export function useTokenHoldings() {
           timestamp: new Date().getTime(),
         };
         localStorage.setItem(
-          `tokenHoldings-${address}`,
+          cacheKey,
           JSON.stringify(cacheData)
         );
 
@@ -124,7 +125,7 @@ export function useTokenHoldings() {
         console.error("Error fetching tokens:", error);
         setError(error as Error);
         setTokens([]);
-        localStorage.removeItem(`tokenHoldings-${address}`);
+        localStorage.removeItem(cacheKey);
       } finally {
         setIsLoading(false);
       }
