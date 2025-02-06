@@ -19,7 +19,7 @@ interface CodeSeerProps {
 }
 
 export function CodeSeer({ onClose }: CodeSeerProps) {
-  const { isConnected } = useWallet();
+  const { isConnected, address } = useWallet();
   const [contractAddress, setContractAddress] = useState('');
   const [blockchain, setBlockchain] = useState('');
   const [addressError, setAddressError] = useState('');
@@ -55,7 +55,7 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (addressError || !contractAddress || !blockchain) return;
+    if (addressError || !contractAddress || !blockchain || !address) return;
 
     setIsLoading(true);
     setError('');
@@ -64,6 +64,7 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
       const results = await auditToken({ 
         contractAddress,
         blockchain: blockchain.toLowerCase(),
+        userKey: address
       })
       
       setAuditResults(results);
