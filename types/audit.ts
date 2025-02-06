@@ -89,4 +89,17 @@ export interface AuditResults {
   tokenomics: TokenomicsData;
   liveAudit: LiveAuditData;
   isScam: boolean;
+}
+
+export interface StoredAuditResult {
+  contract_address: string;
+  blockchain: string;
+  audit_result: {
+    riskAssessment: RiskAssessmentData;
+    codeAudit: Vulnerability[];
+    maliciousPatterns: MaliciousPattern[];
+    tokenomics: TokenomicsData;
+    isScam: boolean;
+  };
+  created_at: string;
 } 
