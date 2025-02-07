@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Moralis from "moralis";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
-
+import { batchAuditContracts } from "@/services/contract-audit";
 // address: '0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511', ETH: to test
 // address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", SOL: to test
 
@@ -21,6 +21,13 @@ export interface Token {
   usdValue?: number;
   status?: string;
   audit_report?: string;
+  price24hrPercentChange?: number;
+  codeseerAudit?: {
+    maliciousPatterns?: number;
+    riskAssessment?: string;
+    severity?: number;
+    commonality?: string;
+  };  
 }
 
 export function useTokenHoldings() {
@@ -36,9 +43,9 @@ export function useTokenHoldings() {
         setTokens([]);
         setIsLoading(false);
         return;
-      }
-
-      const cachedData = localStorage.getItem(`tokenHoldings-${address}`);
+      } 
+      const cacheKey = `tokens-${address}-${caipNetworkId}`;
+      const cachedData = localStorage.getItem(cacheKey);
       if (cachedData) {
         const { tokens: cachedTokens, timestamp } = JSON.parse(cachedData);
         const now = new Date().getTime();
@@ -64,21 +71,44 @@ export function useTokenHoldings() {
               excludeUnverifiedContracts: true,
               maxTokenInactivity: 30,
             });
-          
           const tokenAddresses = response.result.map(token => token.tokenAddress?.toJSON()); // need to apply .toJSON() because the tokenAddress is a EVMAddress object
           const securityStatuses = await updateOrGetTokenSecurityStatus(tokenAddresses as string[], chainId);
-          
+
+          const blockchain = caipNetworkId.startsWith("eip155") ? "ethereum" : "base";
+          const contracts = tokenAddresses.map(tokenAddress => ({
+            address: tokenAddress as string,
+            blockchain: blockchain
+          }));
+          const codeseerAudits = await batchAuditContracts(
+            contracts,
+            address,
+            chainId
+          );
+          console.log(codeseerAudits);
+
           formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
-            (token): Token => ({
-              symbol: token.symbol || "Unknown",
-              name: token.name || "Unknown Token",
-              balance: token.balance?.toString(),
-              balanceFormatted: token.balanceFormatted,
-              usdPrice: Number(token.usdPrice),
-              usdValue: Number(token.usdValue),
-              status: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.status || 'unknown',
-              audit_report: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.audit_report || 'unknown',
-            })
+            (token): Token => {
+              const tokenAddress = token.tokenAddress?.toJSON();
+              const codeseerAudit = tokenAddress ? codeseerAudits[tokenAddress.toLowerCase()] : undefined;
+              
+              return {
+                symbol: token.symbol || "Unknown",
+                name: token.name || "Unknown Token",
+                balance: token.balance?.toString(),
+                balanceFormatted: token.balanceFormatted,
+                usdPrice: Number(token.usdPrice),
+                usdValue: Number(token.usdValue),
+                price24hrPercentChange: Number(token.usdPrice24hrPercentChange),
+                status: securityStatuses?.[tokenAddress as string]?.status || 'unknown',
+                audit_report: securityStatuses?.[tokenAddress as string]?.audit_report || 'unknown',
+                codeseerAudit: codeseerAudit && !codeseerAudit.error ? {
+                  riskAssessment: codeseerAudit.riskAssessment?.summary,
+                  maliciousPatterns: codeseerAudit.maliciousPatterns?.length || 0,
+                  commonality: codeseerAudit.riskAssessment?.commonality?.description,
+                  severity: codeseerAudit.codeAudit?.reduce((acc, curr) => acc + (curr.severity === 'high' ? 1 : 0), 0),
+                } : undefined
+              };
+            }
           ).sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
         } else if (caipNetworkId.startsWith("solana")) {
           const response = await Moralis.SolApi.account.getSPL({
@@ -115,7 +145,7 @@ export function useTokenHoldings() {
           timestamp: new Date().getTime(),
         };
         localStorage.setItem(
-          `tokenHoldings-${address}`,
+          cacheKey,
           JSON.stringify(cacheData)
         );
 
@@ -124,7 +154,7 @@ export function useTokenHoldings() {
         console.error("Error fetching tokens:", error);
         setError(error as Error);
         setTokens([]);
-        localStorage.removeItem(`tokenHoldings-${address}`);
+        localStorage.removeItem(cacheKey);
       } finally {
         setIsLoading(false);
       }
@@ -136,7 +166,7 @@ export function useTokenHoldings() {
   const clearTokenHoldings = () => {
     setTokens([]);
     if (address) {
-      localStorage.removeItem(`tokenHoldings-${address}`);
+      localStorage.removeItem(`tokens-${address}-${caipNetworkId}`);
     }
   };
 

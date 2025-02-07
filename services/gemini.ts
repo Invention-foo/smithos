@@ -1,3 +1,5 @@
+'use server'
+
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import { Json } from '@/types/supabase'
 import JSON5 from 'json5'

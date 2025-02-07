@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { ethers } from "ethers";
 import nacl from "tweetnacl";
 import { decodeUTF8 } from "tweetnacl-util";
-import bs58 from 'bs58';
+import bs58 from "bs58";
 
 export async function POST(request: Request) {
   try {
-    const { walletAddress, signature, nonce, chainType } = await request.json();
+    const { walletAddress, signature, nonce } = await request.json();
 
-    if (!walletAddress || !signature || !nonce || !chainType) {
+    if (!walletAddress || !signature || !nonce) {
       return NextResponse.json(
         { success: false, message: "Missing required parameters" },
         { status: 400 }
@@ -18,26 +18,25 @@ export async function POST(request: Request) {
     const message = `Sign this message to authenticate: ${nonce}`;
     let isValid = false;
 
-    if (chainType === "ethereum") {
-      const recoveredAddress = ethers.verifyMessage(message, signature);
-      isValid = recoveredAddress.toLowerCase() === walletAddress.toLowerCase();
-    } else if (chainType === "solana") {
-      try {
-        const messageBytes = decodeUTF8(message);
-        // Solana signatures and public keys are typically received in base58 format
-        const signatureBytes = Buffer.from(bs58.decode(signature));
-        const publicKeyBytes = Buffer.from(bs58.decode(walletAddress));
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+    isValid = recoveredAddress.toLowerCase() === walletAddress.toLowerCase();
+    // else if (chainType === "solana") {
+    //   try {
+    //     const messageBytes = decodeUTF8(message);
+    //     // Solana signatures and public keys are typically received in base58 format
+    //     const signatureBytes = Buffer.from(bs58.decode(signature));
+    //     const publicKeyBytes = Buffer.from(bs58.decode(walletAddress));
 
-        isValid = nacl.sign.detached.verify(
-          messageBytes,
-          signatureBytes,
-          publicKeyBytes
-        );
-      } catch (err) {
-        console.error('Solana signature verification error:', err);
-        isValid = false;
-      }
-    }
+    //     isValid = nacl.sign.detached.verify(
+    //       messageBytes,
+    //       signatureBytes,
+    //       publicKeyBytes
+    //     );
+    //   } catch (err) {
+    //     console.error('Solana signature verification error:', err);
+    //     isValid = false;
+    //   }
+    // }
 
     if (!isValid) {
       return NextResponse.json(

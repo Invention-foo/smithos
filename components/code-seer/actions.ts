@@ -1,6 +1,6 @@
 'use server'
 
-import { ContractAuditService } from '@/services/contract-audit'
+import { auditContract } from '@/services/contract-audit'
 import { AuditResults } from '@/types/audit'
 
 interface AuditTokenParams {
@@ -14,7 +14,7 @@ export async function auditToken({
   blockchain,
   userKey 
 }: AuditTokenParams): Promise<AuditResults> {
-  return ContractAuditService.auditContract(
+  return auditContract(
     contractAddress,
     blockchain,
     userKey,

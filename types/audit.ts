@@ -89,6 +89,7 @@ export interface AuditResults {
   tokenomics: TokenomicsData;
   liveAudit: LiveAuditData;
   isScam: boolean;
+  error?: string;
 }
 
 export interface StoredAuditResult {

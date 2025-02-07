@@ -1,3 +1,5 @@
+'use server'
+
 interface EtherscanResponse {
   status: string
   message: string
@@ -18,7 +20,7 @@ interface EtherscanResponse {
   }[]
 }
 
-export async function fetchContractSourceCode(contractAddress: string): Promise<string | null> {
+export async function fetchContractSourceCode(contractAddress: string, chainId?: string): Promise<string | null> {
   const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 
   if (!ETHERSCAN_API_KEY) {
@@ -32,15 +34,22 @@ export async function fetchContractSourceCode(contractAddress: string): Promise<
     apikey: ETHERSCAN_API_KEY
   })
 
+  if (chainId) {
+    params.append('chainId', chainId)
+  }
+
+  console.log(params.toString())
+
   try {
     const response = await fetch(
-      `https://api.etherscan.io/api?${params.toString()}`,
+      `https://api.etherscan.io/v2/api?${params.toString()}`,
       {
         headers: {
           'Accept': 'application/json',
         },
       }
     )
+    console.log(response)
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
