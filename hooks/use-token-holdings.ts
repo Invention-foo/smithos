@@ -22,6 +22,12 @@ export interface Token {
   status?: string;
   audit_report?: string;
   price24hrPercentChange?: number;
+  codeseerAudit?: {
+    maliciousPatterns?: number;
+    riskAssessment?: string;
+    severity?: number;
+    commonality?: string;
+  };  
 }
 
 export function useTokenHoldings() {
@@ -78,21 +84,31 @@ export function useTokenHoldings() {
             address,
             chainId
           );
-
           console.log(codeseerAudits);
 
           formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
-            (token): Token => ({
-              symbol: token.symbol || "Unknown",
-              name: token.name || "Unknown Token",
-              balance: token.balance?.toString(),
-              balanceFormatted: token.balanceFormatted,
-              usdPrice: Number(token.usdPrice),
-              usdValue: Number(token.usdValue),
-              price24hrPercentChange: Number(token.usdPrice24hrPercentChange),
-              status: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.status || 'unknown',
-              audit_report: securityStatuses?.[token.tokenAddress?.toJSON() as string]?.audit_report || 'unknown',
-            })
+            (token): Token => {
+              const tokenAddress = token.tokenAddress?.toJSON();
+              const codeseerAudit = tokenAddress ? codeseerAudits[tokenAddress.toLowerCase()] : undefined;
+              
+              return {
+                symbol: token.symbol || "Unknown",
+                name: token.name || "Unknown Token",
+                balance: token.balance?.toString(),
+                balanceFormatted: token.balanceFormatted,
+                usdPrice: Number(token.usdPrice),
+                usdValue: Number(token.usdValue),
+                price24hrPercentChange: Number(token.usdPrice24hrPercentChange),
+                status: securityStatuses?.[tokenAddress as string]?.status || 'unknown',
+                audit_report: securityStatuses?.[tokenAddress as string]?.audit_report || 'unknown',
+                codeseerAudit: codeseerAudit && !codeseerAudit.error ? {
+                  riskAssessment: codeseerAudit.riskAssessment?.summary,
+                  maliciousPatterns: codeseerAudit.maliciousPatterns?.length || 0,
+                  commonality: codeseerAudit.riskAssessment?.commonality?.description,
+                  severity: codeseerAudit.codeAudit?.reduce((acc, curr) => acc + (curr.severity === 'high' ? 1 : 0), 0),
+                } : undefined
+              };
+            }
           ).sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
         } else if (caipNetworkId.startsWith("solana")) {
           const response = await Moralis.SolApi.account.getSPL({
