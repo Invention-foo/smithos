@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Moralis from "moralis";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
-import { batchAuditTokens } from "@/components/code-seer/actions";
+import { batchAuditContracts } from "@/services/contract-audit";
 // address: '0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511', ETH: to test
 // address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", SOL: to test
 
@@ -73,11 +73,13 @@ export function useTokenHoldings() {
             address: tokenAddress as string,
             blockchain: blockchain
           }));
-          const codeseerAudits = await batchAuditTokens({
+          const codeseerAudits = await batchAuditContracts(
             contracts,
-            userKey: address,
-            chainId: chainId
-          });
+            address,
+            chainId
+          );
+
+          console.log(codeseerAudits);
 
           formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
             (token): Token => ({
