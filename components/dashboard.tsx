@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
@@ -58,21 +58,23 @@ export function Dashboard({ onClose }: DashboardProps) {
   const totalValue = tokens.reduce((sum, token) => sum + (token.usdValue || 0), 0);
 
   return (
-    <ModalWrapper onClose={onClose} className="bg-green-900 border border-green-500 p-6 rounded-lg w-[80vw] h-[80vh] overflow-y-auto custom-scrollbar">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl text-green-500">Dashboard</h2>
-        <button onClick={onClose} className="text-green-500 hover:text-green-400">
+    <ModalWrapper onClose={onClose} className="bg-gradient-to-b from-green-950 to-green-900 border border-green-400/30 shadow-xl p-8 rounded-xl w-[85vw] h-[85vh] overflow-y-auto custom-scrollbar">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">Portfolio Dashboard</h2>
+        <button onClick={onClose} className="text-green-400/80 hover:text-green-300 transition-colors">
           <X size={24} />
         </button>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-8">
-          <p className="text-green-300">Loading tokens...</p>
+        <div className="flex justify-center items-center h-[60vh]">
+          <div className="animate-pulse text-green-300">Loading portfolio data...</div>
         </div>
       ) : error ? (
-        <div className="flex justify-center py-8">
-          <p className="text-red-400">Error loading tokens</p>
+        <div className="flex justify-center items-center h-[60vh]">
+          <div className="text-red-400 bg-red-900/20 px-4 py-2 rounded-lg border border-red-500/20">
+            Error loading portfolio data
+          </div>
         </div>
       ) : (
         <>
@@ -134,51 +136,111 @@ export function Dashboard({ onClose }: DashboardProps) {
             </CardContent>
           </Card>
 
-          <Card className="bg-green-900 border border-green-500 w-full">
+          <Card className="bg-green-950/50 backdrop-blur-sm border-green-400/20 w-full shadow-lg">
             <CardHeader>
-              <CardTitle>Token Details</CardTitle>
+              <CardTitle className="text-2xl font-bold text-green-300">Assets</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {tokens.map((token) => (
                   <div 
                     key={token.symbol} 
-                    className="p-2 rounded bg-green-800 flex justify-between items-center"
+                    className="p-4 rounded-lg bg-green-900/40 hover:bg-green-900/60 transition-colors backdrop-blur-sm border border-green-400/10"
                   >
-                    <div className="flex items-center">
-                      <TooltipProvider>
-                        <UiTooltip>
-                          <TooltipTrigger asChild>
-                            <div className="relative group cursor-pointer">
-                              <div className="flex flex-col gap-1">
-                                <div 
-                                  className={`w-3 h-3 rounded-full mr-2 ${
-                                    token.status === 'green' ? 'bg-green-400' : 
-                                    token.status === 'yellow' ? 'bg-yellow-400' : 
-                                    token.status === 'red' ? 'bg-red-400' : 'bg-gray-400'
-                                  }`}
-                                />
+                    <div className="flex justify-between items-start gap-4">
+                      {/* Left section - Token basic info */}
+                      <div className="flex items-start gap-4 min-w-[250px]">
+                        {token.status && (
+                          <TooltipProvider>
+                            <UiTooltip>
+                              <TooltipTrigger asChild>
+                                <div className="mt-2">
+                                  <div 
+                                    className={`w-4 h-4 rounded-full ${
+                                      token.status === 'green' ? 'bg-emerald-400' : 
+                                      token.status === 'yellow' ? 'bg-amber-400' : 
+                                      token.status === 'red' ? 'bg-red-400' : 'bg-gray-400'
+                                    } shadow-lg hover:scale-110 transition-transform cursor-pointer`}
+                                  />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-green-950/90 border border-green-400/30 p-4 rounded-lg shadow-xl backdrop-blur-sm z-50 max-w-md">
+                                <div className="text-sm text-green-100 whitespace-pre-wrap leading-relaxed">
+                                  {token.audit_report || "No audit report available"}
+                                </div>
+                              </TooltipContent>
+                            </UiTooltip>
+                          </TooltipProvider>
+                        )}
+
+                        <div>
+                          <div className="flex items-baseline gap-2 mb-1">
+                            <p className="text-lg font-bold text-green-100">{token.symbol}</p>
+                            <p className="text-sm text-green-400/80">{token.name}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm text-green-300/80">Balance: {Number(token.balanceFormatted).toFixed(3)}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {token.codeseerAudit ? (
+                        <div className="flex-1 min-w-[300px] border-l border-r border-green-400/20 px-4">
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                            <div className="col-span-2 mb-2">
+                              <div className="flex items-center gap-1 text-green-400/70">
+                                <Info size={14} />
+                                <span className="text-xs">More details can be found on CodeSeer</span>
                               </div>
                             </div>
-                          </TooltipTrigger>
-                          <TooltipContent className="bg-green-900 border border-green-500 p-3 rounded-lg shadow-lg z-50 min-w-[200px] max-w-[300px]">
-                            <div className="text-sm text-green-100 whitespace-pre-wrap">
-                              {token.audit_report || "No audit report available"}
+                            <div>
+                              <p className="text-xs text-green-400/70">Malicious Patterns</p>
+                              <p className="text-sm text-green-300">{token.codeseerAudit.maliciousPatterns || 'N/A'}</p>
                             </div>
-                          </TooltipContent>
-                        </UiTooltip>
-                      </TooltipProvider>
-                      <div>
-                        <p className="font-bold">{token.symbol}</p>
-                        <p className="text-sm text-green-300">{token.name}</p>
+                            <div>
+                              <p className="text-xs text-green-400/70">High Severity Issues</p>
+                              <p className="text-sm text-green-300">{token.codeseerAudit.severity || 'N/A'}</p>
+                            </div>
+                            {token.codeseerAudit.riskAssessment ? (
+                              <div className="col-span-2">
+                                <p className="text-xs text-green-400/70">Risk Assessment</p>
+                                <p className="text-sm text-green-300">{token.codeseerAudit.riskAssessment}</p>
+                              </div>
+                            ) : (
+                              <div className="col-span-2">
+                                <p className="text-xs text-green-400/70">Risk Assessment</p>
+                                <p className="text-sm text-green-300">No risk assessment available</p>
+                              </div>
+                            )}
+                            {token.codeseerAudit.commonality ? (
+                              <div className="col-span-2">
+                                <p className="text-xs text-green-400/70">Code Commonality</p>
+                                <p className="text-sm text-green-300">{token.codeseerAudit.commonality}</p>
+                              </div>
+                            ) : (
+                              <div className="col-span-2">
+                                <p className="text-xs text-green-400/70">Code Commonality</p>
+                                <p className="text-sm text-green-300">No commonality data available</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex-1 min-w-[300px] border-l border-r border-green-400/20 px-4">
+                          <p className="text-sm text-green-300">No security report available</p>
+                        </div>
+                      )}
+
+                      {/* Right section - Price info */}
+                      <div className="text-right min-w-[150px]">
+                        <p className="text-xl font-bold text-green-100">${token.usdValue?.toLocaleString() ?? '0'}</p>
+                        <p className="text-sm text-green-300/80 mt-1">Price: ${token.usdPrice?.toLocaleString() ?? '0'}</p>
+                        {token.price24hrPercentChange !== undefined && (
+                          <p className={`text-sm font-medium mt-1 ${token.price24hrPercentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                            {token.price24hrPercentChange >= 0 ? '↑' : '↓'} {Math.abs(token.price24hrPercentChange).toFixed(2)}%
+                          </p>
+                        )}
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg">${token.usdValue?.toLocaleString() ?? '0'}</p>
-                      <p className="text-sm text-green-300">Price: ${token.usdPrice?.toLocaleString() ?? '0'}</p>
-                      <p className={`text-sm ${(token.price24hrPercentChange ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        24h Change: {(token.price24hrPercentChange ?? 0).toFixed(2)}%
-                      </p>
                     </div>
                   </div>
                 ))}
@@ -190,3 +252,4 @@ export function Dashboard({ onClose }: DashboardProps) {
     </ModalWrapper>
   );
 }
+
