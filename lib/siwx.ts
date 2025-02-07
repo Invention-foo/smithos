@@ -11,14 +11,13 @@ class SIWXLocalStorage extends LocalStorage {
     walletAddress: string,
     signature: string,
     nonce: string,
-    chainType: string
   ) {
     const response = await fetch("/api/verifySignature", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ walletAddress, signature, nonce, chainType }),
+      body: JSON.stringify({ walletAddress, signature, nonce }),
     });
 
     return await response.json();
@@ -31,12 +30,10 @@ class SIWXLocalStorage extends LocalStorage {
         signature,
         data: { nonce, chainId },
       } = session;
-      const chainType = chainId.startsWith('solana:') ? 'solana' : 'ethereum';
       const verificationResult = await this.verifySignature(
         accountAddress,
         signature,
         nonce,
-        chainType
       );
 
       if (verificationResult.error || !verificationResult.success) {
@@ -54,7 +51,7 @@ class SIWXLocalStorage extends LocalStorage {
       const { error: upsertError } = await supabase.from("smith_users").upsert(
         {
           wallet_address: accountAddress,
-          wallet_provider: chainType,
+          wallet_provider: chainId,
         },
         {
           onConflict: "wallet_address",
