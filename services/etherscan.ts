@@ -20,7 +20,7 @@ interface EtherscanResponse {
   }[]
 }
 
-export async function fetchContractSourceCode(contractAddress: string): Promise<string | null> {
+export async function fetchContractSourceCode(contractAddress: string, chainId?: string): Promise<string | null> {
   const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 
   if (!ETHERSCAN_API_KEY) {
@@ -33,6 +33,10 @@ export async function fetchContractSourceCode(contractAddress: string): Promise<
     address: contractAddress,
     apikey: ETHERSCAN_API_KEY
   })
+
+  if (chainId) {
+    params.append('chainId', chainId)
+  }
 
   try {
     const response = await fetch(

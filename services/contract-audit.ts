@@ -118,7 +118,8 @@ export async function auditContract(
   blockchain: string,
   userKey: string,
   type: 'CODESEER' | 'BATCH' = 'CODESEER',
-  skipRateLimit = false
+  skipRateLimit = false,
+  chainId?: string
 ): Promise<AuditResults> {
   if (!skipRateLimit) {
     const { limited, waitTime } = isRateLimited(userKey, type)
@@ -139,7 +140,7 @@ export async function auditContract(
     }
 
     const [sourceCode, tokenData] = await Promise.all([
-      fetchContractSourceCode(contractAddress),
+      fetchContractSourceCode(contractAddress, chainId),
       fetchTokenData(contractAddress, blockchain)
     ])
 
@@ -171,7 +172,8 @@ export async function auditContract(
 
 export async function batchAuditContracts(
   contracts: Array<{ address: string, blockchain: string }>,
-  userKey: string
+  userKey: string,
+  chainId?: string
 ): Promise<Record<string, AuditResults>> {
   const storedAudits = await getStoredAudits(contracts)
   const storedAuditsMap = new Map(
@@ -229,7 +231,8 @@ export async function batchAuditContracts(
         contract.blockchain,
         userKey,
         'BATCH',
-        true
+        true,
+        chainId
       )
       results[contract.address] = auditResult
     } catch (error) {

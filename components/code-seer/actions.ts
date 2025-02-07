@@ -1,12 +1,18 @@
 'use server'
 
-import { auditContract } from '@/services/contract-audit'
+import { auditContract, batchAuditContracts } from '@/services/contract-audit'
 import { AuditResults } from '@/types/audit'
 
 interface AuditTokenParams {
   contractAddress: string
   blockchain: string
   userKey: string
+}
+
+interface BatchAuditTokenParams {
+  contracts: Array<{ address: string, blockchain: string }>
+  userKey: string,
+  chainId?: string
 }
 
 export async function auditToken({ 
@@ -21,3 +27,11 @@ export async function auditToken({
     'CODESEER'
   )
 } 
+
+export async function batchAuditTokens({
+  contracts,
+  userKey,
+  chainId
+}: BatchAuditTokenParams): Promise<Record<string, AuditResults>> {
+  return batchAuditContracts(contracts, userKey, chainId)
+}

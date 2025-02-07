@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Moralis from "moralis";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
-
+import { batchAuditTokens } from "@/components/code-seer/actions";
 // address: '0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511', ETH: to test
 // address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", SOL: to test
 
@@ -67,6 +67,17 @@ export function useTokenHoldings() {
             });
           const tokenAddresses = response.result.map(token => token.tokenAddress?.toJSON()); // need to apply .toJSON() because the tokenAddress is a EVMAddress object
           const securityStatuses = await updateOrGetTokenSecurityStatus(tokenAddresses as string[], chainId);
+
+          const blockchain = caipNetworkId.startsWith("eip155") ? "ethereum" : "base";
+          const contracts = tokenAddresses.map(tokenAddress => ({
+            address: tokenAddress as string,
+            blockchain: blockchain
+          }));
+          const codeseerAudits = await batchAuditTokens({
+            contracts,
+            userKey: address,
+            chainId: chainId
+          });
 
           formattedTokens = response.result.filter(token => Number(token.usdValue) > 0.01).map(
             (token): Token => ({
