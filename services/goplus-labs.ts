@@ -1,3 +1,5 @@
+'use server'
+
 import { Json } from "@/types/supabase"
 
 interface TokenMetadata {
@@ -110,7 +112,7 @@ export async function fetchTokenData(
   }
 }
 
-export function getBlockchainFromChainId(chainId: string): string {
+export async function getBlockchainFromChainId(chainId: string): Promise<string> {
   const chainMap: Record<string, string> = {
     '1': 'ethereum',
     '56': 'bsc',

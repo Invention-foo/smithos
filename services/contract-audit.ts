@@ -1,3 +1,5 @@
+'use server'
+
 import { supabase } from '@/lib/supabase'
 import { performContractAudit } from './gemini'
 import { fetchContractSourceCode } from './etherscan'
@@ -55,133 +57,130 @@ function getDefaultLiveAudit() {
   }
 }
 
-export class ContractAuditService {
-  static async getStoredAudits(contracts: Array<{ address: string, blockchain: string }>) {
-    const { data, error } = await supabase
-      .from('codeseer_audits')
-      .select('*')
-      .in('contract_address', contracts.map(c => c.address.toLowerCase()))
-      .in('blockchain', contracts.map(c => c.blockchain.toLowerCase()))
+// Convert class methods to exported async functions
+export async function getStoredAudits(contracts: Array<{ address: string, blockchain: string }>) {
+  const { data, error } = await supabase
+    .from('codeseer_audits')
+    .select('*')
+    .in('contract_address', contracts.map(c => c.address.toLowerCase()))
+    .in('blockchain', contracts.map(c => c.blockchain.toLowerCase()))
 
-    if (error) {
-      console.error('Error fetching stored audits:', error)
-      return []
-    }
-
-    return data as StoredAuditResult[]
+  if (error) {
+    console.error('Error fetching stored audits:', error)
+    return []
   }
 
-  static async getStoredAudit(contractAddress: string, blockchain: string) {
-    const { data, error } = await supabase
-      .from('codeseer_audits')
-      .select('*')
-      .eq('contract_address', contractAddress.toLowerCase())
-      .eq('blockchain', blockchain.toLowerCase())
-      .single()
+  return data as StoredAuditResult[]
+}
 
-    if (error || !data) {
-      return null
-    }
+export async function getStoredAudit(contractAddress: string, blockchain: string) {
+  const { data, error } = await supabase
+    .from('codeseer_audits')
+    .select('*')
+    .eq('contract_address', contractAddress.toLowerCase())
+    .eq('blockchain', blockchain.toLowerCase())
+    .single()
 
-    return data as StoredAuditResult
+  if (error || !data) {
+    return null
   }
 
-  static async storeAuditResult(
-    contractAddress: string,
-    blockchain: string,
-    auditResult: Omit<AuditResults, 'liveAudit'>
-  ) {
-    const { error } = await supabase
-      .from('codeseer_audits')
-      .upsert({
-        contract_address: contractAddress.toLowerCase(),
-        blockchain: blockchain.toLowerCase(),
-        audit_result: {
-          riskAssessment: auditResult.riskAssessment,
-          codeAudit: auditResult.codeAudit,
-          maliciousPatterns: auditResult.maliciousPatterns,
-          tokenomics: auditResult.tokenomics,
-          isScam: auditResult.isScam
-        },
-        created_at: new Date().toISOString()
-      })
+  return data as StoredAuditResult
+}
 
-    if (error) {
-      console.error('Error storing audit result:', error)
-    }
-  }
-
-  static async auditContract(
-    contractAddress: string,
-    blockchain: string,
-    userKey: string,
-    type: 'CODESEER' | 'BATCH' = 'CODESEER',
-    skipRateLimit = false
-  ): Promise<AuditResults> {
-    // Check rate limit
-    if (!skipRateLimit) {
-      const { limited, waitTime } = isRateLimited(userKey, type)
-      if (limited) {
-        throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
-      }
-    }
-
-    try {
-      const storedAudit = await this.getStoredAudit(contractAddress, blockchain)
-      
-      if (storedAudit) {
-        const tokenData = await fetchTokenData(contractAddress, blockchain)
-        return {
-          ...storedAudit.audit_result,
-          liveAudit: tokenData?.liveAudit ?? getDefaultLiveAudit()
-        }
-      }
-
-      const [sourceCode, tokenData] = await Promise.all([
-        fetchContractSourceCode(contractAddress),
-        fetchTokenData(contractAddress, blockchain)
-      ])
-
-      if (!sourceCode) {
-        throw new Error('Contract source code not found or not verified')
-      }
-
-      const { auditResult } = await performContractAudit(sourceCode)
-      
-      const transformedData = {
-        riskAssessment: auditResult.riskAssessmentAndSummary,
-        codeAudit: auditResult.codeAudit.vulnerabilities,
-        maliciousPatterns: auditResult.maliciousCodeDetection.malicious_code,
-        tokenomics: auditResult.tokenomicsAndTradingFunctionalityAudit.tokenomics,
+export async function storeAuditResult(
+  contractAddress: string,
+  blockchain: string,
+  auditResult: Omit<AuditResults, 'liveAudit'>
+) {
+  const { error } = await supabase
+    .from('codeseer_audits')
+    .upsert({
+      contract_address: contractAddress.toLowerCase(),
+      blockchain: blockchain.toLowerCase(),
+      audit_result: {
+        riskAssessment: auditResult.riskAssessment,
+        codeAudit: auditResult.codeAudit,
+        maliciousPatterns: auditResult.maliciousPatterns,
+        tokenomics: auditResult.tokenomics,
         isScam: auditResult.isScam
-      }
+      },
+      created_at: new Date().toISOString()
+    })
 
-      await this.storeAuditResult(contractAddress, blockchain, transformedData)
+  if (error) {
+    console.error('Error storing audit result:', error)
+  }
+}
 
+export async function auditContract(
+  contractAddress: string,
+  blockchain: string,
+  userKey: string,
+  type: 'CODESEER' | 'BATCH' = 'CODESEER',
+  skipRateLimit = false
+): Promise<AuditResults> {
+  if (!skipRateLimit) {
+    const { limited, waitTime } = isRateLimited(userKey, type)
+    if (limited) {
+      throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+    }
+  }
+
+  try {
+    const storedAudit = await getStoredAudit(contractAddress, blockchain)
+    
+    if (storedAudit) {
+      const tokenData = await fetchTokenData(contractAddress, blockchain)
       return {
-        ...transformedData,
+        ...storedAudit.audit_result,
         liveAudit: tokenData?.liveAudit ?? getDefaultLiveAudit()
       }
-    } catch (error) {
-      console.error('Error in auditContract:', error)
-      throw error
     }
+
+    const [sourceCode, tokenData] = await Promise.all([
+      fetchContractSourceCode(contractAddress),
+      fetchTokenData(contractAddress, blockchain)
+    ])
+
+    if (!sourceCode) {
+      throw new Error('Contract source code not found or not verified')
+    }
+
+    const { auditResult } = await performContractAudit(sourceCode)
+    
+    const transformedData = {
+      riskAssessment: auditResult.riskAssessmentAndSummary,
+      codeAudit: auditResult.codeAudit.vulnerabilities,
+      maliciousPatterns: auditResult.maliciousCodeDetection.malicious_code,
+      tokenomics: auditResult.tokenomicsAndTradingFunctionalityAudit.tokenomics,
+      isScam: auditResult.isScam
+    }
+
+    await storeAuditResult(contractAddress, blockchain, transformedData)
+
+    return {
+      ...transformedData,
+      liveAudit: tokenData?.liveAudit ?? getDefaultLiveAudit()
+    }
+  } catch (error) {
+    console.error('Error in auditContract:', error)
+    throw error
   }
+}
 
-  static async batchAuditContracts(
-    contracts: Array<{ address: string, blockchain: string }>,
-    userKey: string
-  ): Promise<Record<string, AuditResults>> {
-    // First, get all stored audits
-    const storedAudits = await this.getStoredAudits(contracts)
-    const storedAuditsMap = new Map(
-      storedAudits.map(audit => [`${audit.contract_address}-${audit.blockchain}`, audit])
-    )
+export async function batchAuditContracts(
+  contracts: Array<{ address: string, blockchain: string }>,
+  userKey: string
+): Promise<Record<string, AuditResults>> {
+  const storedAudits = await getStoredAudits(contracts)
+  const storedAuditsMap = new Map(
+    storedAudits.map(audit => [`${audit.contract_address}-${audit.blockchain}`, audit])
+  )
 
-    // Identify contracts needing new audits
-    const contractsToAudit = contracts.filter(contract => 
-      !storedAuditsMap.has(`${contract.address.toLowerCase()}-${contract.blockchain.toLowerCase()}`)
-    )
+  const contractsToAudit = contracts.filter(contract => 
+    !storedAuditsMap.has(`${contract.address.toLowerCase()}-${contract.blockchain.toLowerCase()}`)
+  )
 
     // Fetch live data for all contracts in parallel
     const liveDataPromises = contracts.map(contract => 
@@ -214,32 +213,31 @@ export class ContractAuditService {
       }
     }
 
-    // Process new audits
-    for (const contract of contractsToAudit) {
-      const { limited, waitTime } = isRateLimited(userKey, 'BATCH')
-      if (limited) {
-        results[contract.address] = {
-          error: `Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`
-        } as any
-        continue
-      }
-
-      try {
-        const auditResult = await this.auditContract(
-          contract.address,
-          contract.blockchain,
-          userKey,
-          'BATCH',
-          true  // Skip rate limit check in auditContract
-        )
-        results[contract.address] = auditResult
-      } catch (error) {
-        results[contract.address] = {
-          error: error instanceof Error ? error.message : 'Audit failed'
-        } as any
-      }
+  // Process new audits
+  for (const contract of contractsToAudit) {
+    const { limited, waitTime } = isRateLimited(userKey, 'BATCH')
+    if (limited) {
+      results[contract.address] = {
+        error: `Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`
+      } as any
+      continue
     }
 
-    return results
+    try {
+      const auditResult = await auditContract(
+        contract.address,
+        contract.blockchain,
+        userKey,
+        'BATCH',
+        true
+      )
+      results[contract.address] = auditResult
+    } catch (error) {
+      results[contract.address] = {
+        error: error instanceof Error ? error.message : 'Audit failed'
+      } as any
+    }
   }
+
+  return results
 } 

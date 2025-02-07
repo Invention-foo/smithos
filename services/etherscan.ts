@@ -1,3 +1,5 @@
+'use server'
+
 interface EtherscanResponse {
   status: string
   message: string
