@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { ChartContainer } from "@/components/ui/chart"
@@ -56,6 +56,14 @@ const assetValueData = [
 export function Dashboard({ onClose }: DashboardProps) {
   const { tokens, isLoading, error } = useTokenHoldings();
   const totalValue = tokens.reduce((sum, token) => sum + (token.usdValue || 0), 0);
+  const [expandedTokens, setExpandedTokens] = useState<{[key: string]: boolean}>({});
+
+  const toggleExpand = (symbol: string) => {
+    setExpandedTokens(prev => ({
+      ...prev,
+      [symbol]: !prev[symbol]
+    }));
+  };
 
   return (
     <ModalWrapper onClose={onClose} className="bg-gradient-to-b from-green-950 to-green-900 border border-green-400/30 shadow-xl p-8 rounded-xl w-[85vw] h-[85vh] overflow-y-auto custom-scrollbar">
@@ -201,27 +209,41 @@ export function Dashboard({ onClose }: DashboardProps) {
                               <p className="text-xs text-green-400/70">High Severity Issues</p>
                               <p className="text-sm text-green-300">{token.codeseerAudit.severity || 'N/A'}</p>
                             </div>
-                            {token.codeseerAudit.riskAssessment ? (
-                              <div className="col-span-2">
-                                <p className="text-xs text-green-400/70">Risk Assessment</p>
-                                <p className="text-sm text-green-300">{token.codeseerAudit.riskAssessment}</p>
-                              </div>
-                            ) : (
-                              <div className="col-span-2">
-                                <p className="text-xs text-green-400/70">Risk Assessment</p>
-                                <p className="text-sm text-green-300">No risk assessment available</p>
-                              </div>
-                            )}
-                            {token.codeseerAudit.commonality ? (
-                              <div className="col-span-2">
-                                <p className="text-xs text-green-400/70">Code Commonality</p>
-                                <p className="text-sm text-green-300">{token.codeseerAudit.commonality}</p>
-                              </div>
-                            ) : (
-                              <div className="col-span-2">
-                                <p className="text-xs text-green-400/70">Code Commonality</p>
-                                <p className="text-sm text-green-300">No commonality data available</p>
-                              </div>
+                            
+                            <div className="col-span-2 mt-2">
+                              <button 
+                                onClick={() => toggleExpand(token.symbol)}
+                                className="flex items-center gap-1 text-green-400/70 hover:text-green-400 transition-colors text-sm"
+                              >
+                                {expandedTokens[token.symbol] ? (
+                                  <>
+                                    <ChevronUp size={16} />
+                                    <span>Show Less</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown size={16} />
+                                    <span>Show More</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+
+                            {expandedTokens[token.symbol] && (
+                              <>
+                                <div className="col-span-2 mt-2">
+                                  <p className="text-xs text-green-400/70">Risk Assessment</p>
+                                  <p className="text-sm text-green-300">
+                                    {token.codeseerAudit.riskAssessment || 'No risk assessment available'}
+                                  </p>
+                                </div>
+                                <div className="col-span-2">
+                                  <p className="text-xs text-green-400/70">Code Commonality</p>
+                                  <p className="text-sm text-green-300">
+                                    {token.codeseerAudit.commonality || 'No commonality data available'}
+                                  </p>
+                                </div>
+                              </>
                             )}
                           </div>
                         </div>
@@ -252,4 +274,3 @@ export function Dashboard({ onClose }: DashboardProps) {
     </ModalWrapper>
   );
 }
-
