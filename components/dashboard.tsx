@@ -1,61 +1,35 @@
 import React, { useState } from 'react';
 import { X, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
-import { ChartContainer } from "@/components/ui/chart"
-import { ModalWrapper } from "@/components/modal-wrapper"
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTokenHoldings } from "@/hooks/use-token-holdings";
+import { useTransactions } from "@/hooks/use-transactions";
 import {
   Tooltip as UiTooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-const customScrollbarStyles = `
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 10px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: #0a0a0a;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #1a1a1a;
-    border-radius: 5px;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #2a2a2a;
-  }
-`;
-
-const style = document.createElement('style');
-style.textContent = customScrollbarStyles;
-document.head.appendChild(style);
-
+import { ModalWrapper } from './modal-wrapper';
 
 interface DashboardProps {
   onClose: () => void;
 }
 
-const assetValueData = [
-  { date: '2023-01-01', value: 20000 },
-  { date: '2023-02-01', value: 22000 },
-  { date: '2023-03-01', value: 21000 },
-  { date: '2023-04-01', value: 23000 },
-  { date: '2023-05-01', value: 25000 },
-  { date: '2023-06-01', value: 24000 },
-  { date: '2023-07-01', value: 26000 },
-  { date: '2023-08-01', value: 27000 },
-  { date: '2023-09-01', value: 28000 },
-  { date: '2023-10-01', value: 29000 },
-  { date: '2023-11-01', value: 30000 },
-  { date: '2023-12-01', value: 32000 },
-  { date: '2024-01-01', value: 33000 },
-];
+const formatEth = (value: string) => {
+  const eth = Number.parseFloat(value) / 1e18
+  return eth.toFixed(4)
+}
 
 export function Dashboard({ onClose }: DashboardProps) {
-  const { tokens, isLoading, error } = useTokenHoldings();
+  const { tokens, isLoading: tokensLoading, error: tokensError } = useTokenHoldings();
+  const { transactions, isLoading: txLoading, error: txError } = useTransactions();
   const totalValue = tokens.reduce((sum, token) => sum + (token.usdValue || 0), 0);
+  
+  const chartData = transactions.map((tx) => ({
+    date: new Date(tx.date).toLocaleDateString(),
+    value: tx.value,
+  }));
   const [expandedTokens, setExpandedTokens] = useState<{[key: string]: boolean}>({});
 
   const toggleExpand = (symbol: string) => {
@@ -68,17 +42,19 @@ export function Dashboard({ onClose }: DashboardProps) {
   return (
     <ModalWrapper onClose={onClose} className="bg-gradient-to-b from-green-950 to-green-900 border border-green-400/30 shadow-xl p-8 rounded-xl w-[85vw] h-[85vh] overflow-y-auto custom-scrollbar">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">Portfolio Dashboard</h2>
+        <div>
+          <p className="text-green-300 mt-2">Portfolio Value: ${totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+        </div>
         <button onClick={onClose} className="text-green-400/80 hover:text-green-300 transition-colors">
           <X size={24} />
         </button>
       </div>
 
-      {isLoading ? (
+      {tokensLoading || txLoading ? (
         <div className="flex justify-center items-center h-[60vh]">
           <div className="animate-pulse text-green-300">Loading portfolio data...</div>
         </div>
-      ) : error ? (
+      ) : tokensError || txError ? (
         <div className="flex justify-center items-center h-[60vh]">
           <div className="text-red-400 bg-red-900/20 px-4 py-2 rounded-lg border border-red-500/20">
             Error loading portfolio data
@@ -87,66 +63,64 @@ export function Dashboard({ onClose }: DashboardProps) {
       ) : (
         <>
           <Card className="bg-green-900/50 border border-green-500 mb-4 w-full">
-            <CardHeader>
-              <CardTitle>Asset Value Over Time</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Portfolio Activity</CardTitle>
+              <TooltipProvider>
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <Info size={16} className="text-green-400/70 hover:text-green-400 cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-green-950/90 border border-green-400/30 p-3">
+                    <p className="text-green-300">Shows daily transaction volume and balance changes</p>
+                  </TooltipContent>
+                </UiTooltip>
+              </TooltipProvider>
             </CardHeader>
             <CardContent>
-              <div className="w-full h-[200px]">
-                <ChartContainer config={{
-                  value: {
-                    label: "Value",
-                    color: "hsl(var(--chart-1))",
-                  },
-                }} className="w-full h-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart 
-                      data={assetValueData} 
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                    >
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="var(--chart-color)" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={false}
-                      />
-                      <YAxis 
-                        stroke="var(--chart-color)" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={false}
-                      />
-                      <Tooltip
-                        content={({ active, payload, label }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="bg-green-900 border border-green-500 p-2 rounded">
-                                <p className="text-green-300">{`Date: ${label}`}</p>
-                                <p className="text-green-300">{`Value: $${payload[0]?.value?.toLocaleString()}`}</p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Area 
-                        type="monotone" 
-                        dataKey="value" 
-                        stroke="var(--chart-color)" 
-                        fill="var(--chart-color)" 
-                        fillOpacity={0.2}
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+              <div className="w-full h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#22543D" />
+                    <XAxis 
+                      dataKey="date" 
+                      stroke="#6EE7B7"
+                      tick={{ fill: '#6EE7B7' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#064E3B', 
+                        border: '1px solid #10B981',
+                        borderRadius: '6px'
+                      }}
+                      labelStyle={{ color: '#6EE7B7' }}
+                      itemStyle={{ color: '#6EE7B7' }}
+                      formatter={(value: any) => [Number.parseFloat(value.toString())]}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#10B981" 
+                      fill="url(#colorValue)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-green-950/50 backdrop-blur-sm border-green-400/20 w-full shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-green-300">Assets</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-2xl font-bold text-green-300">Digital Assets</CardTitle>
+              <div className="text-green-300 text-sm">
+                {tokens.length} Token{tokens.length === 1 ? '' : 's'} Found
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
