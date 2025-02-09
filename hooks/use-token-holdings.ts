@@ -3,6 +3,7 @@ import Moralis from "moralis";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
 import { batchAuditContracts } from "@/services/contract-audit";
+import { useLocalStorageCache } from "@/hooks/use-local-storage-cache";
 // address: '0xb5d85CBf7cB3EE0D56b3bB207D5Fc4B82f43F511', ETH: to test
 // address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1", SOL: to test
 
@@ -36,6 +37,7 @@ export function useTokenHoldings() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { caipNetworkId } = useAppKitNetwork();
+  const { getFromCache, setToCache, removeFromCache } = useLocalStorageCache<Token[]>();
 
   useEffect(() => {
     const fetchTokens = async () => {
@@ -43,18 +45,15 @@ export function useTokenHoldings() {
         setTokens([]);
         setIsLoading(false);
         return;
-      } 
-      const cacheKey = `tokens-${address}-${caipNetworkId}`;
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        const { tokens: cachedTokens, timestamp } = JSON.parse(cachedData);
-        const now = new Date().getTime();
+      }
 
-        if (now - timestamp < ONE_HOUR) {
-          setTokens(cachedTokens);
-          setIsLoading(false);
-          return;
-        }
+      const cacheKey = `tokens-${address}-${caipNetworkId}`;
+      const cachedTokens = getFromCache(cacheKey);
+      
+      if (cachedTokens) {
+        setTokens(cachedTokens);
+        setIsLoading(false);
+        return;
       }
 
       try {
@@ -139,22 +138,13 @@ export function useTokenHoldings() {
             .sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0));
         }
 
-        // Store tokens with timestamp
-        const cacheData = {
-          tokens: formattedTokens,
-          timestamp: new Date().getTime(),
-        };
-        localStorage.setItem(
-          cacheKey,
-          JSON.stringify(cacheData)
-        );
-
+        setToCache(cacheKey, formattedTokens);
         setTokens(formattedTokens);
       } catch (error) {
         console.error("Error fetching tokens:", error);
         setError(error as Error);
         setTokens([]);
-        localStorage.removeItem(cacheKey);
+        removeFromCache(cacheKey);
       } finally {
         setIsLoading(false);
       }
@@ -166,7 +156,7 @@ export function useTokenHoldings() {
   const clearTokenHoldings = () => {
     setTokens([]);
     if (address) {
-      localStorage.removeItem(`tokens-${address}-${caipNetworkId}`);
+      removeFromCache(`tokens-${address}-${caipNetworkId}`);
     }
   };
 

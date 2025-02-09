@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import Moralis from "moralis";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
+import { useLocalStorageCache } from "./use-local-storage-cache";
 
 export interface Transaction {
   date: string;
   value: number;
 }
-
-const ONE_HOUR = 60 * 60 * 1000; // 1 hour in milliseconds
 
 export function useTransactions() {
   const { address } = useAppKitAccount();
@@ -15,6 +14,7 @@ export function useTransactions() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { caipNetworkId } = useAppKitNetwork();
+  const { getFromCache, setToCache, removeFromCache } = useLocalStorageCache<Transaction[]>();
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -25,16 +25,12 @@ export function useTransactions() {
       }
 
       const cacheKey = `transactions-${address}-${caipNetworkId}`;
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        const { transactions: cachedTransactions, timestamp } = JSON.parse(cachedData);
-        const now = new Date().getTime();
-
-        if (now - timestamp < ONE_HOUR) {
-          setTransactions(cachedTransactions);
-          setIsLoading(false);
-          return;
-        }
+      const cachedTransactions = getFromCache(cacheKey);
+      
+      if (cachedTransactions) {
+        setTransactions(cachedTransactions);
+        setIsLoading(false);
+        return;
       }
 
       try {
@@ -68,13 +64,7 @@ export function useTransactions() {
               value: data.volume.toString()
             }));
 
-          // Store transactions with timestamp
-          const cacheData = {
-            transactions: formattedTransactions,
-            timestamp: new Date().getTime(),
-          };
-          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-
+          setToCache(cacheKey, formattedTransactions);
           setTransactions(formattedTransactions);
         }
         
@@ -82,7 +72,7 @@ export function useTransactions() {
       } catch (err) {
         setError(err as Error);
         setTransactions([]);
-        localStorage.removeItem(cacheKey);
+        removeFromCache(cacheKey);
         setIsLoading(false);
       }
     };
@@ -93,7 +83,7 @@ export function useTransactions() {
   const clearTransactions = () => {
     setTransactions([]);
     if (address) {
-      localStorage.removeItem(`transactions-${address}-${caipNetworkId}`);
+      removeFromCache(`transactions-${address}-${caipNetworkId}`);
     }
   };
 
