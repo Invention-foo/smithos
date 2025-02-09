@@ -5,7 +5,9 @@ import { useLocalStorageCache } from "./use-local-storage-cache";
 
 export interface Transaction {
   date: string;
-  value: number;
+  value: string;
+  type: string;
+  hash: string;
 }
 
 export function useTransactions() {
@@ -41,31 +43,41 @@ export function useTransactions() {
             chain: chainId,
             limit: 100
           });
-          // Group transactions by date for daily aggregation
-          const txsByDate = response.result.reduce((acc, tx) => {
-            const date = tx.blockTimestamp.toISOString().split('T')[0];
-            if (!acc[date]) {
-              acc[date] = {
-                volume: 0,
-                transactions: []
-              };
-            }
-            
-            const value = Number(tx.value) / 1e18;
-            acc[date].volume += value;
-            acc[date].transactions.push(tx);
-            return acc;
-          }, {} as Record<string, any>);
-
-          const formattedTransactions = Object.entries(txsByDate)
-            .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-            .map(([date, data]) => ({
-              date,
-              value: data.volume.toString()
+          const formattedTransactions = response.result.map(tx => ({
+              date: new Date(tx.blockTimestamp).toISOString().split('T')[0],
+              value: tx.value,
+              type: tx.from.lowercase === address.toLowerCase() ? 'Sent' : 'Received',
+              hash: tx.hash
             }));
+            
+            // Group transactions by date for daily aggregation
+            const txsByDate = formattedTransactions.reduce((acc, tx) => {
+              const date = tx.date;
+              if (!acc[date]) {
+                acc[date] = {
+                  volume: 0,
+                  transactions: []
+                };
+              }
+              const value = Number(tx.value) / 1e18;
+              acc[date].volume += value;
+              acc[date].transactions.push(tx);
+              return acc;
+            }, {} as Record<string, {volume: number, transactions: any[]}>);
+            
+            const sortedTransactions = Object.entries(txsByDate)
+              .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+              .flatMap(([date, data]) => 
+                data.transactions.map((tx: any) => ({
+                  date,
+                  value: tx.value,
+                  type: tx.type,
+                  hash: tx.hash
+                }))
+              );
 
-          setToCache(cacheKey, formattedTransactions);
-          setTransactions(formattedTransactions);
+          setToCache(cacheKey, sortedTransactions);
+          setTransactions(sortedTransactions);
         }
         
         setIsLoading(false);

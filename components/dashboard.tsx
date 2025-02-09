@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { X, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { useTokenHoldings } from "@/hooks/use-token-holdings";
 import { useTransactions } from "@/hooks/use-transactions";
 import {
@@ -22,6 +23,7 @@ const formatEth = (value: string) => {
 }
 
 export function Dashboard({ onClose }: DashboardProps) {
+  const [showTransactions, setShowTransactions] = useState(false);
   const { tokens, isLoading: tokensLoading, error: tokensError } = useTokenHoldings();
   const { transactions, isLoading: txLoading, error: txError } = useTransactions();
   const totalValue = tokens.reduce((sum, token) => sum + (token.usdValue || 0), 0);
@@ -241,6 +243,61 @@ export function Dashboard({ onClose }: DashboardProps) {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-green-950/50 backdrop-blur-sm border-green-400/20 w-full shadow-lg mt-4">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-2xl font-bold text-green-300">Recent Transactions</CardTitle>
+              <div className="text-green-300 text-sm">
+                {transactions.length} Transaction{transactions.length === 1 ? '' : 's'}
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Collapsible open={showTransactions} onOpenChange={setShowTransactions}>
+                <CollapsibleTrigger className="w-full flex items-center justify-center p-2 text-green-400 hover:text-green-300 transition-colors">
+                  {showTransactions ? (
+                    <>
+                      Hide Transactions
+                      <ChevronUp className="ml-2" />
+                    </>
+                  ) : (
+                    <>
+                      Show Transactions
+                      <ChevronDown className="ml-2" />
+                    </>
+                  )}
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="space-y-3">
+                    {transactions.map((tx) => (
+                      <div 
+                        key={tx.hash} 
+                        className="p-4 rounded-lg bg-green-900/40 hover:bg-green-900/60 transition-colors backdrop-blur-sm border border-green-400/10"
+                      >
+                        <div className="flex justify-between items-center gap-4">
+                          <div>
+                            <p className="text-green-100 font-medium">{tx.type}</p>
+                            <p className="text-sm text-green-400/80">
+                              {new Date(tx.date).toLocaleDateString()} {new Date(tx.date).toLocaleTimeString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-green-100">{formatEth(tx.value)} ETH</p>
+                            <a 
+                              href={`https://etherscan.io/tx/${tx.hash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-green-400 hover:text-green-300 transition-colors"
+                            >
+                              View on Etherscan →
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </CardContent>
           </Card>
         </>
