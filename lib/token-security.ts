@@ -2,7 +2,12 @@ import { supabase } from "./supabase";
 
 const evaluateSecurityRisks = (results: any) => {
   let message = "";
-  
+  // filter by token_symbol for USDC USDT
+  const safeTokens = ['USDC', 'USDT'];
+  if (safeTokens.includes(results?.token_symbol)) {
+    return { status: "green", message: "No significant risks detected."};
+  }
+
   // Check high risk conditions first
   const highRiskConditions = {
     'is_honeypot': ['1', "HIGH RISK - Honeypot detected.\n"],
