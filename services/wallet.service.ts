@@ -113,9 +113,10 @@ export class WalletService {
         const codeseerAudits = await batchAuditContracts(contracts, address, chainId);
 
         formattedTokens = this.formatEvmTokens(response.result, securityStatuses, codeseerAudits);
-      } else if (caipNetworkId.startsWith("solana")) {
-        formattedTokens = await this.fetchSolanaTokens(address);
-      }
+      } 
+      // else if (caipNetworkId.startsWith("solana")) {
+      //   formattedTokens = await this.fetchSolanaTokens(address);
+      // }
 
       localStorage.setItem(cacheKey, JSON.stringify(formattedTokens));
       return formattedTokens;
@@ -245,33 +246,33 @@ export class WalletService {
       .sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
   }
 
-  private async fetchSolanaTokens(address: string): Promise<Token[]> {
-    const response = await Moralis.SolApi.account.getSPL({
-      address: address,
-      network: "mainnet",
-    });
+  // private async fetchSolanaTokens(address: string): Promise<Token[]> {
+  //   const response = await Moralis.SolApi.account.getSPL({
+  //     address: address,
+  //     network: "mainnet",
+  //   });
     
-    const solPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
-    const solPriceData = await solPriceResponse.json();
-    const solUsdPrice = solPriceData.solana.usd;
+  //   const solPriceResponse = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+  //   const solPriceData = await solPriceResponse.json();
+  //   const solUsdPrice = solPriceData.solana.usd;
     
-    return response.result
-      .map((token): Token => {
-        const balance = Number(token.amount.solana);
-        const usdValue = balance * solUsdPrice;
+  //   return response.result
+  //     .map((token): Token => {
+  //       const balance = Number(token.amount.solana);
+  //       const usdValue = balance * solUsdPrice;
         
-        return {
-          symbol: token.symbol || "Unknown",
-          name: token.name || "Unknown Token",
-          balance: token.amount.lamports?.toString(),
-          balanceFormatted: token.amount.solana?.toString(),
-          usdPrice: solUsdPrice,
-          usdValue: usdValue
-        };
-      })
-      .filter(token => (token.usdValue ?? 0) > 0.001)
-      .sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0));
-  }
+  //       return {
+  //         symbol: token.symbol || "Unknown",
+  //         name: token.name || "Unknown Token",
+  //         balance: token.amount.lamports?.toString(),
+  //         balanceFormatted: token.amount.solana?.toString(),
+  //         usdPrice: solUsdPrice,
+  //         usdValue: usdValue
+  //       };
+  //     })
+  //     .filter(token => (token.usdValue ?? 0) > 0.001)
+  //     .sort((a, b) => (b.usdValue ?? 0) - (a.usdValue ?? 0));
+  // }
 }
 
 export const walletService = WalletService.getInstance(); 
