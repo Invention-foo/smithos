@@ -43,7 +43,7 @@ import Clock from "./components/Clock"
 export default function MatrixOS() {
   const [bootState, setBootState] = useState<
     "booting" | "agent-smith" | "matrix-rain" | "os" | "shutdown" | "powered-off"
-  >("agent-smith")
+  >("booting")
   const [osOpacity, setOsOpacity] = useState(0)
   const [isMatrixRainFadingOut, setIsMatrixRainFadingOut] = useState(false)
   const matrixRainRef = useRef<MatrixRainRef>(null)
