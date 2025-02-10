@@ -207,7 +207,7 @@ export class WalletService {
 
   private sortTransactions(txsByDate: Record<string, {volume: number, transactions: any[]}>) {
     return Object.entries(txsByDate)
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
       .flatMap(([date, data]) => 
         data.transactions.map((tx: any) => ({
           date,
