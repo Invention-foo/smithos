@@ -56,15 +56,24 @@ export class WalletService {
     try {
       if (caipNetworkId.startsWith("eip155")) {
         const chainId = caipNetworkId.split(":")[1];
-        const response = await Moralis.EvmApi.transaction.getWalletTransactions({
+        const ethResponse = await Moralis.EvmApi.transaction.getWalletTransactions({
+          address,
+          chain: chainId,
+          limit: 100
+        });
+        const erc20Response = await Moralis.EvmApi.token.getWalletTokenTransfers({
           address,
           chain: chainId,
           limit: 100
         });
 
-        const transactions = this.formatTransactions(response.result, address);
-        localStorage.setItem(cacheKey, JSON.stringify(transactions));
-        return transactions;
+        const ethTransactions = this.formatTransactions(ethResponse.result, address);
+        const erc20Transactions = this.formatTransactions(erc20Response.result, address);
+        const allTransactions = [...ethTransactions, ...erc20Transactions]
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        localStorage.setItem(cacheKey, JSON.stringify(allTransactions));
+        return allTransactions;
       }
       return [];
     } catch (error) {
