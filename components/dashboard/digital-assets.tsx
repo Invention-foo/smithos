@@ -7,16 +7,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Token } from "@/types/wallet";
+import { useTokenHoldings } from "@/hooks/use-token-holdings";
 
-interface DigitalAssetsProps {
-  tokens: Token[];
-}
+export function DigitalAssets() {
+  const { tokens, isLoading, error } = useTokenHoldings();
+  const [expandedTokens, setExpandedTokens] = useState<{[key: string]: boolean}>({});
 
-export function DigitalAssets({ tokens }: DigitalAssetsProps) {
-  const [expandedTokens, setExpandedTokens] = useState<{
-    [key: string]: boolean;
-  }>({});
+  if (isLoading) return <div className="animate-pulse text-green-300">Loading assets...</div>;
+  if (error) return <div className="text-red-400">Error loading assets</div>;
 
   const toggleExpand = (symbol: string) => {
     setExpandedTokens((prev) => ({

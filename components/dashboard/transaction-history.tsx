@@ -1,16 +1,17 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { Transaction } from '@/types/wallet';
-
-interface TransactionHistoryProps {
-  transactions: Transaction[];
-}
+import { useTransactions } from "@/hooks/use-transactions";
 
 const formatEth = (value: string) => {
   const eth = Number.parseFloat(value) / 1e18
   return eth.toFixed(4)
 }
 
-export function TransactionHistory({ transactions }: TransactionHistoryProps) {
+export function TransactionHistory() {
+  const { transactions, isLoading, error } = useTransactions();
+  
+  if (isLoading) return <div className="animate-pulse text-green-300">Loading transactions...</div>;
+  if (error) return null;
+
   return (
     <Card className="bg-green-950/50 backdrop-blur-sm border-green-400/20 w-full shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between">

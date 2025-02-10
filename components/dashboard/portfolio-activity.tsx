@@ -7,12 +7,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTransactions } from "@/hooks/use-transactions";
 
-interface PortfolioActivityProps {
-  chartData: Array<{ date: string; value: string }>;
-}
+export function PortfolioActivity() {
+  const { transactions, isLoading, error } = useTransactions();
+  
+  if (isLoading) return <div className="animate-pulse text-green-300">Loading chart data...</div>;
+  if (error) return null;
 
-export function PortfolioActivity({ chartData }: PortfolioActivityProps) {
+  const chartData = transactions.map((tx) => ({
+    date: new Date(tx.date).toLocaleDateString(),
+    value: tx.value,
+  }));
+
   return (
     <Card className="bg-green-900/50 border border-green-500 mb-4 w-full">
       <CardHeader className="flex flex-row items-center justify-between">
