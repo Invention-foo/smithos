@@ -70,7 +70,7 @@ export class WalletService {
         const ethTransactions = this.formatTransactions(ethResponse.result, address);
         const erc20Transactions = this.formatTransactions(erc20Response.result, address);
         const allTransactions = [...ethTransactions, ...erc20Transactions]
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+          .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
         localStorage.setItem(cacheKey, JSON.stringify(allTransactions));
         return allTransactions;
@@ -187,20 +187,20 @@ export class WalletService {
 
   private formatTransactions(txs: any[], address: string): Transaction[] {
     const formattedTransactions = txs.map(tx => ({
-      date: new Date(tx.blockTimestamp).toISOString().split('T')[0],
+      timestamp: new Date(tx.blockTimestamp).toISOString(),
       value: tx.value,
       type: tx.from.lowercase === address.toLowerCase() ? 'Sent' : 'Received',
       hash: tx.hash
     }));
 
     // Group and sort transactions
-    const txsByDate = this.groupTransactionsByDate(formattedTransactions);
-    return this.sortTransactions(txsByDate);
+    const txsByTimestamp = this.groupTransactionsByTimestamp(formattedTransactions);
+    return this.sortTransactions(txsByTimestamp);
   }
 
-  private groupTransactionsByDate(transactions: Transaction[]) {
+  private groupTransactionsByTimestamp(transactions: Transaction[]) {
     return transactions.reduce((acc, tx) => {
-      const date = tx.date;
+      const date = tx.timestamp.split('T')[0];
       if (!acc[date]) {
         acc[date] = {
           volume: 0,
@@ -219,7 +219,7 @@ export class WalletService {
       .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
       .flatMap(([date, data]) => 
         data.transactions.map((tx: any) => ({
-          date,
+          timestamp: tx.timestamp,
           value: tx.value,
           type: tx.type,
           hash: tx.hash

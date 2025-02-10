@@ -30,7 +30,7 @@ export function TransactionHistory() {
                 <div>
                   <p className="text-green-100 font-medium">{tx.type}</p>
                   <p className="text-sm text-green-400/80">
-                    {new Date(tx.date).toLocaleDateString()} {new Date(tx.date).toLocaleTimeString()}
+                    {new Date(tx.timestamp).toLocaleDateString()} {new Date(tx.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
                 <div className="text-right">
