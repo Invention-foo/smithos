@@ -68,8 +68,9 @@ export class WalletService {
           limit: 100
         });
 
-        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address, 'ETH');
-        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address, 'ERC_20');
+        const ethUsdPrice = await this.getEthUsdPrice();
+        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address, 'ETH', ethUsdPrice);
+        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address, 'ERC_20', ethUsdPrice);
         const allTransactions = [...ethTransactions, ...erc20Transactions]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -186,14 +187,14 @@ export class WalletService {
     localStorage.setItem(`${this.STORAGE_PREFIX}-session`, JSON.stringify(session));
   }
 
-  private formatTransactions(txs: any[], address: string, type: string): Transaction[] {
+  private formatTransactions(txs: any[], address: string, type: string, ethUsdPrice: number): Transaction[] {
     let formattedTransactions: Transaction[] = [];
 
     // https://docs.moralis.com/web3-data-api/evm/reference/get-wallet-transactions
     if (type === 'ETH') {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
-        value: (parseFloat(tx.value) / Math.pow(10, 18)).toString(),
+        value: (parseFloat(tx.value) / Math.pow(10, 18) * ethUsdPrice).toString(),
         type: tx.from_address === address.toLowerCase() ? 'Sent' : 'Received',
         hash: tx.hash
       }))
@@ -202,7 +203,7 @@ export class WalletService {
     else if (type === 'ERC_20') {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
-        value: (parseFloat(tx.value) / Math.pow(10, 18)).toString(),
+        value: (parseFloat(tx.value) / Math.pow(10, 18) * ethUsdPrice).toString(),
         type: tx.address === address.toLowerCase() ? 'Sent' : 'Received',
         hash: tx.transaction_hash
       }))
@@ -269,7 +270,12 @@ export class WalletService {
       .sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
   }
 
-
+  private async getEthUsdPrice() {
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd');
+    const ethPriceData = await response.json();
+    const ethUsdPrice = ethPriceData.ethereum.usd;
+    return ethUsdPrice;
+  }
 
   // private async fetchSolanaTokens(address: string): Promise<Token[]> {
   //   const response = await Moralis.SolApi.account.getSPL({

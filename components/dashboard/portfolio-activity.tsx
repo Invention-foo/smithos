@@ -16,7 +16,7 @@ export function PortfolioActivity() {
   if (error) return null;
 
   const chartData = transactions.map((tx) => ({
-    date: new Date(tx.date).toLocaleDateString(),
+    date: new Date(tx.timestamp).toLocaleDateString(),
     value: tx.value,
   }));
 
