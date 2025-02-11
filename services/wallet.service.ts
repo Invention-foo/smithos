@@ -60,12 +60,16 @@ export class WalletService {
         const ethResponse = await Moralis.EvmApi.transaction.getWalletTransactions({
           address,
           chain: chainId,
-          limit: 100
+          fromDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          toDate: new Date().toISOString(),
+          limit: 20
         });
         const erc20Response = await Moralis.EvmApi.token.getWalletTokenTransfers({
           address,
           chain: chainId,
-          limit: 100
+          fromDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          toDate: new Date().toISOString(),
+          limit: 20
         });
 
         const ethUsdPrice = await this.getEthUsdPrice();
@@ -203,43 +207,12 @@ export class WalletService {
     else if (type === 'ERC_20') {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
-        value: (parseFloat(tx.value) / Math.pow(10, 18) * ethUsdPrice).toString(),
+        value: (tx.value_decimal).toString(),
         type: tx.address === address.toLowerCase() ? 'Sent' : 'Received',
         hash: tx.transaction_hash
       }))
     }
-    // Group and sort transactions
-    const txsByTimestamp = this.groupTransactionsByTimestamp(formattedTransactions);
-    return this.sortTransactions(txsByTimestamp);
-  }
-
-  private groupTransactionsByTimestamp(transactions: Transaction[]) {
-    return transactions.reduce((acc, tx) => {
-      const date = tx.timestamp.split('T')[0];
-      if (!acc[date]) {
-        acc[date] = {
-          volume: 0,
-          transactions: []
-        };
-      }
-      const value = Number(tx.value) / 1e18;
-      acc[date].volume += value;
-      acc[date].transactions.push(tx);
-      return acc;
-    }, {} as Record<string, {volume: number, transactions: any[]}>);
-  }
-
-  private sortTransactions(txsByDate: Record<string, {volume: number, transactions: any[]}>) {
-    return Object.entries(txsByDate)
-      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-      .flatMap(([date, data]) => 
-        data.transactions.map((tx: any) => ({
-          timestamp: tx.timestamp,
-          value: tx.value,
-          type: tx.type,
-          hash: tx.hash
-        }))
-      );
+    return formattedTransactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }
 
   private formatEvmTokens(tokens: any[], securityStatuses: any, codeseerAudits: any): Token[] {
