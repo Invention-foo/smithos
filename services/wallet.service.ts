@@ -68,8 +68,8 @@ export class WalletService {
           limit: 100
         });
 
-        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address);
-        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address);
+        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address, 'ETH');
+        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address, 'ERC_20');
         const allTransactions = [...ethTransactions, ...erc20Transactions]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -186,14 +186,27 @@ export class WalletService {
     localStorage.setItem(`${this.STORAGE_PREFIX}-session`, JSON.stringify(session));
   }
 
-  private formatTransactions(txs: any[], address: string): Transaction[] {
-    const formattedTransactions = txs.map(tx => ({
-      timestamp: new Date(tx.block_timestamp).toISOString(),
-      value: tx.value_decimal,
-      type: tx.address === address.toLowerCase() ? 'Sent' : 'Received',
-      hash: tx.transaction_hash
-    }));
+  private formatTransactions(txs: any[], address: string, type: string): Transaction[] {
+    let formattedTransactions: Transaction[] = [];
 
+    // https://docs.moralis.com/web3-data-api/evm/reference/get-wallet-transactions
+    if (type === 'ETH') {
+      formattedTransactions = txs.map(tx => ({
+        timestamp: new Date(tx.block_timestamp).toISOString(),
+        value: (parseFloat(tx.value) / Math.pow(10, 18)).toString(),
+        type: tx.from_address === address.toLowerCase() ? 'Sent' : 'Received',
+        hash: tx.hash
+      }))
+    } 
+    // https://docs.moralis.com/web3-data-api/evm/reference/get-wallet-token-transfers
+    else if (type === 'ERC_20') {
+      formattedTransactions = txs.map(tx => ({
+        timestamp: new Date(tx.block_timestamp).toISOString(),
+        value: (parseFloat(tx.value) / Math.pow(10, 18)).toString(),
+        type: tx.address === address.toLowerCase() ? 'Sent' : 'Received',
+        hash: tx.transaction_hash
+      }))
+    }
     // Group and sort transactions
     const txsByTimestamp = this.groupTransactionsByTimestamp(formattedTransactions);
     return this.sortTransactions(txsByTimestamp);

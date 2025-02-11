@@ -3,6 +3,15 @@ import { useTransactions } from "@/hooks/use-transactions";
 import { getBlockExplorerUrl } from "@/lib/wallet";
 import { useAppKitNetwork } from "@reown/appkit/react";
 
+const formatEth = (value: string) => {
+  const ethValue = Number.parseFloat(value);
+  if (isNaN(ethValue)) return '0';
+  
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 8
+  }).format(ethValue);
+}
 
 export function TransactionHistory() {
   const { transactions, isLoading, error } = useTransactions();
@@ -33,7 +42,7 @@ export function TransactionHistory() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-green-100">${tx.value}</p>
+                  <p className="text-lg font-bold text-green-100">{formatEth(tx.value)} ETH</p>
                   <a 
                     href={getBlockExplorerUrl(tx.hash, caipNetworkId)}
                     target="_blank"
