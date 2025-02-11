@@ -1,14 +1,13 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useTransactions } from "@/hooks/use-transactions";
+import { getBlockExplorerUrl } from "@/lib/wallet";
+import { useAppKitNetwork } from "@reown/appkit/react";
 
-const formatEth = (value: string) => {
-  const eth = Number.parseFloat(value) / 1e18
-  return eth.toFixed(4)
-}
 
 export function TransactionHistory() {
   const { transactions, isLoading, error } = useTransactions();
-  
+  const { caipNetworkId } = useAppKitNetwork();
+
   if (isLoading) return <div className="animate-pulse text-green-300">Loading transactions...</div>;
   if (error) return null;
 
@@ -34,14 +33,14 @@ export function TransactionHistory() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-green-100">{formatEth(tx.value)} ETH</p>
+                  <p className="text-lg font-bold text-green-100">${tx.value}</p>
                   <a 
-                    href={`https://etherscan.io/tx/${tx.hash}`}
+                    href={getBlockExplorerUrl(tx.hash, caipNetworkId)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-green-400 hover:text-green-300 transition-colors"
                   >
-                    View on Etherscan →
+                    View on Block Explorer →
                   </a>
                 </div>
               </div>

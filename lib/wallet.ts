@@ -8,6 +8,7 @@ export const disconnectWallet = async () => {
 
   localStorage.removeItem("wagmi.wallet");
   localStorage.removeItem("wagmi.connected");
+  // TODO: clear transactions and tokens
 };
 
 export const connectWallet = async () => {
@@ -29,3 +30,23 @@ export const connectWallet = async () => {
     }
   }
 };
+
+export const getBlockExplorerUrl = (hash: string, caipNetworkId: string | undefined) => {
+  if (!caipNetworkId) return '';
+  const chainId = caipNetworkId.split(':')[1];
+  const blockchain = getBlockchainFromChainId(chainId);
+  const baseUrl = blockchain === 'base'
+    ? 'https://basescan.org'
+    : 'https://etherscan.io';
+
+  return `${baseUrl}/tx/${hash}`;
+}
+
+export const getBlockchainFromChainId = (chainId: string): string => {
+  switch (chainId) {
+    case '8453':
+      return 'base';
+    default:
+      return 'ethereum';
+  }
+}

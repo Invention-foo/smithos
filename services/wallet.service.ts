@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import type { Transaction, Token } from "../types/wallet";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
 import { batchAuditContracts } from "./contract-audit";
+import { getBlockchainFromChainId } from "@/lib/wallet";
 
 export class WalletService {
   private static instance: WalletService;
@@ -67,8 +68,8 @@ export class WalletService {
           limit: 100
         });
 
-        const ethTransactions = this.formatTransactions(ethResponse.result, address);
-        const erc20Transactions = this.formatTransactions(erc20Response.result, address);
+        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address);
+        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address);
         const allTransactions = [...ethTransactions, ...erc20Transactions]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -114,7 +115,7 @@ export class WalletService {
         const tokenAddresses = response.result.map(token => token.tokenAddress?.toJSON());
         const securityStatuses = await updateOrGetTokenSecurityStatus(tokenAddresses as string[], chainId);
 
-        const blockchain = caipNetworkId.startsWith("eip155") ? "ethereum" : "base";
+        const blockchain = getBlockchainFromChainId(chainId);
         const contracts = tokenAddresses.map(tokenAddress => ({
           address: tokenAddress as string,
           blockchain: blockchain
@@ -187,10 +188,10 @@ export class WalletService {
 
   private formatTransactions(txs: any[], address: string): Transaction[] {
     const formattedTransactions = txs.map(tx => ({
-      timestamp: new Date(tx.blockTimestamp).toISOString(),
-      value: tx.value,
-      type: tx.from.lowercase === address.toLowerCase() ? 'Sent' : 'Received',
-      hash: tx.hash
+      timestamp: new Date(tx.block_timestamp).toISOString(),
+      value: tx.value_decimal,
+      type: tx.address === address.toLowerCase() ? 'Sent' : 'Received',
+      hash: tx.transaction_hash
     }));
 
     // Group and sort transactions
@@ -254,6 +255,8 @@ export class WalletService {
       })
       .sort((a, b) => Number(b.usdValue) - Number(a.usdValue));
   }
+
+
 
   // private async fetchSolanaTokens(address: string): Promise<Token[]> {
   //   const response = await Moralis.SolApi.account.getSPL({
