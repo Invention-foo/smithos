@@ -9,6 +9,7 @@ import { getBlockchainFromChainId } from "@/lib/wallet";
 export class WalletService {
   private static instance: WalletService;
   private readonly STORAGE_PREFIX = 'wallet';
+  private readonly STORAGE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
 
   private constructor() {}
 
@@ -78,7 +79,8 @@ export class WalletService {
         const allTransactions = [...ethTransactions, ...erc20Transactions]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-        localStorage.setItem(cacheKey, JSON.stringify(allTransactions));
+        const cacheData = { data: allTransactions, expiry: Date.now() + this.STORAGE_TIMEOUT };
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
         return allTransactions;
       }
       return [];
@@ -91,7 +93,15 @@ export class WalletService {
   getStoredTransactions(address: string, caipNetworkId: string): Transaction[] | null {
     const cacheKey = `${this.STORAGE_PREFIX}-transactions-${address}-${caipNetworkId}`;
     const stored = localStorage.getItem(cacheKey);
-    return stored ? JSON.parse(stored) : null;
+    if (stored) {
+      const cacheData = JSON.parse(stored);
+      if (cacheData.expiry > Date.now()) {
+        return cacheData.data;
+      } else {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+    return null;
   }
 
   clearStoredTransactions(address: string, caipNetworkId: string): void {
@@ -110,7 +120,8 @@ export class WalletService {
           chain: chainId,
         });
         const pnl = response.result;
-        localStorage.setItem(cacheKey, JSON.stringify(pnl));
+        const cacheData = { data: pnl, expiry: Date.now() + this.STORAGE_TIMEOUT };
+        localStorage.setItem(cacheKey, JSON.stringify(cacheData));
         return pnl as Pnl;
       }
       return null;
@@ -123,7 +134,15 @@ export class WalletService {
   getStoredPnl(address: string, caipNetworkId: string): Pnl | null {
     const cacheKey = `${this.STORAGE_PREFIX}-pnl-${address}-${caipNetworkId}`;
     const stored = localStorage.getItem(cacheKey);
-    return stored ? JSON.parse(stored) : null;
+    if (stored) {
+      const cacheData = JSON.parse(stored);
+      if (cacheData.expiry > Date.now()) {
+        return cacheData.data;
+      } else {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+    return null;
   }
 
   clearStoredPnl(address: string, caipNetworkId: string): void {
@@ -165,7 +184,8 @@ export class WalletService {
       //   formattedTokens = await this.fetchSolanaTokens(address);
       // }
 
-      localStorage.setItem(cacheKey, JSON.stringify(formattedTokens));
+      const cacheData = { data: formattedTokens, expiry: Date.now() + this.STORAGE_TIMEOUT };
+      localStorage.setItem(cacheKey, JSON.stringify(cacheData));
       return formattedTokens;
     } catch (error) {
       localStorage.removeItem(cacheKey);
@@ -176,7 +196,15 @@ export class WalletService {
   getStoredTokens(address: string, caipNetworkId: string): Token[] | null {
     const cacheKey = `${this.STORAGE_PREFIX}-tokens-${address}-${caipNetworkId}`;
     const stored = localStorage.getItem(cacheKey);
-    return stored ? JSON.parse(stored) : null;
+    if (stored) {
+      const cacheData = JSON.parse(stored);
+      if (cacheData.expiry > Date.now()) {
+        return cacheData.data;
+      } else {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+    return null;
   }
 
   clearStoredTokens(address: string, caipNetworkId: string): void {
