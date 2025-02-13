@@ -42,7 +42,7 @@ export function PortfolioActivity() {
           {pnl && <PnLSummary pnl={pnl} />}
         </div>
         <div className="w-full md:w-1/2">
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={chartData}
