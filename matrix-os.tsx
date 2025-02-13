@@ -193,12 +193,12 @@ function MainOS({
           <DesktopIcon 
             icon={<MessageCircle />} 
             label="Telegram" 
-            onClick={() => window.open('https://t.me/SmithDotSol', '_blank')}
+            onClick={() => window.open('https://t.me/SmithDotBase', '_blank')}
           />
           <DesktopIcon 
             icon={<Twitter />} 
             label="Twitter" 
-            onClick={() => window.open('https://x.com/SmithDotSol', '_blank')}
+            onClick={() => window.open('https://x.com/0xSmithAI', '_blank')}
           />
         </div>
 
