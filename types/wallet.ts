@@ -1,8 +1,11 @@
 export interface Transaction {
   timestamp: string;
   value: string;
-  type: string;
+  direction: 'sent' | 'received'; 
   hash: string;
+  tokenName?: string;
+  tokenSymbol: string;
+  type: 'eth' | 'erc20';
 }
 
 export interface Token {

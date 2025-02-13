@@ -1,20 +1,9 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useTransactions } from "@/hooks/use-transactions";
 import { getBlockExplorerUrl } from "@/lib/wallet";
-import { useAppKitNetwork } from "@reown/appkit/react";
-
-const formatDollar = (value: string) => {
-  const num = Number.parseFloat(value);
-  const decimals = num.toString().split('.')[1];
-  if (!decimals || decimals.length <= 2) {
-    return `$${num.toFixed(2)}`;
-  }
-  return `$${num.toFixed(4)}`;
-}
 
 export function TransactionHistory() {
   const { transactions, isLoading, error } = useTransactions();
-  const { caipNetworkId } = useAppKitNetwork();
 
   if (isLoading) return <div className="animate-pulse text-green-300">Loading transactions...</div>;
   if (error) return null;
@@ -35,15 +24,20 @@ export function TransactionHistory() {
             >
               <div className="flex justify-between items-center gap-4">
                 <div>
-                  <p className="text-green-100 font-medium">{tx.type}</p>
+                  <p className="text-green-100 font-medium">{tx.direction}</p>
                   <p className="text-sm text-green-400/80">
                     {new Date(tx.timestamp).toLocaleDateString()} {new Date(tx.timestamp).toLocaleTimeString()}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-green-100">{formatDollar(tx.value)}</p>
+                  <p className="text-lg font-bold text-green-100">
+                    {Number(tx.value).toLocaleString('en-US', {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 4,
+                    })} {tx.tokenSymbol}
+                  </p>
                   <a 
-                    href={getBlockExplorerUrl(tx.hash, caipNetworkId)}
+                    href={getBlockExplorerUrl(tx.hash, tx.type)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-green-400 hover:text-green-300 transition-colors"
@@ -59,3 +53,4 @@ export function TransactionHistory() {
     </Card>
   );
 } 
+

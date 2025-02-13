@@ -31,11 +31,9 @@ export const connectWallet = async () => {
   }
 };
 
-export const getBlockExplorerUrl = (hash: string, caipNetworkId: string | undefined) => {
-  if (!caipNetworkId) return '';
-  const chainId = caipNetworkId.split(':')[1];
-  const blockchain = getBlockchainFromChainId(chainId);
-  const baseUrl = blockchain === 'base'
+export const getBlockExplorerUrl = (hash: string, type: 'eth' | 'erc20') => {
+  if (!type) return '';
+  const baseUrl = type === 'erc20'
     ? 'https://basescan.org'
     : 'https://etherscan.io';
 

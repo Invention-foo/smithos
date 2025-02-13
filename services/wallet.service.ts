@@ -72,9 +72,9 @@ export class WalletService {
           limit: 20
         });
 
-        const ethUsdPrice = await this.getEthUsdPrice();
-        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address, 'ETH', ethUsdPrice);
-        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address, 'ERC_20', ethUsdPrice);
+        
+        const ethTransactions = this.formatTransactions(ethResponse.toJSON().result, address, 'eth');
+        const erc20Transactions = this.formatTransactions(erc20Response.toJSON().result, address, 'erc20');
         const allTransactions = [...ethTransactions, ...erc20Transactions]
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
@@ -191,25 +191,31 @@ export class WalletService {
     localStorage.setItem(`${this.STORAGE_PREFIX}-session`, JSON.stringify(session));
   }
 
-  private formatTransactions(txs: any[], address: string, type: string, ethUsdPrice: number): Transaction[] {
+  private formatTransactions(txs: any[], address: string, type: 'eth' | 'erc20'): Transaction[] {
     let formattedTransactions: Transaction[] = [];
 
     // https://docs.moralis.com/web3-data-api/evm/reference/get-wallet-transactions
-    if (type === 'ETH') {
+    if (type === 'eth') {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
-        value: (parseFloat(tx.value) / Math.pow(10, 18) * ethUsdPrice).toString(),
-        type: tx.from_address === address.toLowerCase() ? 'Sent' : 'Received',
-        hash: tx.hash
+        value: (tx.value / Math.pow(10, 18)).toString(),
+        direction: tx.from_address === address ? 'sent' : 'received',
+        hash: tx.hash,
+        tokenName: "Ethereum",
+        tokenSymbol: "ETH",
+        type
       }))
     } 
     // https://docs.moralis.com/web3-data-api/evm/reference/get-wallet-token-transfers
-    else if (type === 'ERC_20') {
+    else if (type === 'erc20') {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
-        value: (tx.value_decimal).toString(),
-        type: tx.address === address.toLowerCase() ? 'Sent' : 'Received',
-        hash: tx.transaction_hash
+        value: (tx.value / Math.pow(10, tx.token_decimals)).toString(),
+        direction: tx.from_address === address ? 'sent' : 'received',
+        hash: tx.transaction_hash,
+        tokenName: tx.token_name,
+        tokenSymbol: tx.token_symbol,
+        type
       }))
     }
     return formattedTransactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());

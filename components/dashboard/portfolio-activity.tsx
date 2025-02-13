@@ -30,7 +30,6 @@ const chartConfig = {
 
 export function PortfolioActivity() {
   const { transactions, isLoading, error } = useTransactions();
-  console.log(transactions);
 
   if (isLoading)
     return (
@@ -47,9 +46,9 @@ export function PortfolioActivity() {
     if (!acc[date]) {
       acc[date] = { date, sent: 0, received: 0 };
     }
-    if (tx.type === "Sent") {
+    if (tx.direction === 'sent') {
       acc[date].sent += Number(tx.value);
-    } else if (tx.type === "Received") {
+    } else if (tx.direction === "received") {
       acc[date].received += Number(tx.value);
     }
     return acc;
@@ -58,8 +57,6 @@ export function PortfolioActivity() {
   const chartData = Object.values(groupedData).sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-
-  console.log(chartData);
 
   return (
     <Card className="bg-green-900/50 border border-green-500 mb-4 w-full">
