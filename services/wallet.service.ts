@@ -1,7 +1,7 @@
 import Moralis from "moralis";
 import { SIWXSession } from "@reown/appkit-core";
 import { supabase } from "../lib/supabase";
-import type { Transaction, Token } from "../types/wallet";
+import type { Transaction, Token, Pnl } from "../types/wallet";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
 import { batchAuditContracts } from "./contract-audit";
 import { getBlockchainFromChainId } from "@/lib/wallet";
@@ -96,6 +96,38 @@ export class WalletService {
 
   clearStoredTransactions(address: string, caipNetworkId: string): void {
     const cacheKey = `${this.STORAGE_PREFIX}-transactions-${address}-${caipNetworkId}`;
+    localStorage.removeItem(cacheKey);
+  }
+
+  // Wallet PnL Methods
+  async fetchAndCachePnl(address: string, caipNetworkId: string): Promise<Pnl | null> {
+    const cacheKey = `${this.STORAGE_PREFIX}-pnl-${address}-${caipNetworkId}`;
+    try {
+      if (caipNetworkId.startsWith("eip155")) {
+        const chainId = caipNetworkId.split(":")[1];
+        const response = await Moralis.EvmApi.wallets.getWalletProfitabilitySummary({
+          address,
+          chain: chainId,
+        });
+        const pnl = response.result;
+        localStorage.setItem(cacheKey, JSON.stringify(pnl));
+        return pnl as Pnl;
+      }
+      return null;
+    } catch (error) {
+      localStorage.removeItem(cacheKey);
+      throw error;
+    }
+  }
+
+  getStoredPnl(address: string, caipNetworkId: string): Pnl | null {
+    const cacheKey = `${this.STORAGE_PREFIX}-pnl-${address}-${caipNetworkId}`;
+    const stored = localStorage.getItem(cacheKey);
+    return stored ? JSON.parse(stored) : null;
+  }
+
+  clearStoredPnl(address: string, caipNetworkId: string): void {
+    const cacheKey = `${this.STORAGE_PREFIX}-pnl-${address}-${caipNetworkId}`;
     localStorage.removeItem(cacheKey);
   }
 

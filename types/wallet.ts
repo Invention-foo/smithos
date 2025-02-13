@@ -25,3 +25,15 @@ export interface Token {
     commonality?: string;
   };
 }
+
+
+export interface Pnl {
+  totalCountOfTrades: number;
+  totalTradeVolume: string;
+  totalRealizedProfitUsd: string;
+  totalRealizedProfitPercentage: number;
+  totalBuys: number;
+  totalSells: number;
+  totalSoldVolumeUsd: string;
+  totalBoughtVolumeUsd: string;
+}
