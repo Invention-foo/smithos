@@ -18,13 +18,14 @@ export function usePnl() {
         return;
       }
 
-      const cachedPnl = walletService.getStoredPnl(address, caipNetworkId);
-      if (cachedPnl) {
-        setPnl(cachedPnl);
-        setIsLoading(false);
-        return;
-      }
+      // const storedPnl = walletService.getStoredPnl(address, caipNetworkId);
+      // if (storedPnl) {
+      //   setPnl(storedPnl);
+      //   setIsLoading(false);
+      //   return;
+      // }
 
+      setIsLoading(true);
       try {
         const fetchedPnl = await walletService.fetchAndCachePnl(address, caipNetworkId);
         setPnl(fetchedPnl);

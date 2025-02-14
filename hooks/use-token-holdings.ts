@@ -18,13 +18,14 @@ export function useTokenHoldings() {
         return;
       }
 
-      const cachedTokens = walletService.getStoredTokens(address, caipNetworkId);
-      if (cachedTokens) {
-        setTokens(cachedTokens);
-        setIsLoading(false);
-        return;
-      }
+      // const storedTokens = walletService.getStoredTokens(address, caipNetworkId);
+      // if (storedTokens) {
+      //   setTokens(storedTokens);
+      //   setIsLoading(false);
+      //   return;
+      // }
 
+      setIsLoading(true);
       try {
         const fetchedTokens = await walletService.fetchAndCacheTokens(address, caipNetworkId);
         setTokens(fetchedTokens);

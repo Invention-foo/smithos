@@ -18,27 +18,24 @@ export function useTransactions() {
         return;
       }
 
+      // const storedTransactions = walletService.getStoredTransactions(address, caipNetworkId);
+      // if (storedTransactions) {
+      //   setTransactions(storedTransactions);
+      //   setIsLoading(false);
+      //   return;
+      // }
+
+      setIsLoading(true);
       try {
-        const cachedTransactions = walletService.getStoredTransactions(
-          address,
-          caipNetworkId
-        );
-
-        if (cachedTransactions) {
-          setTransactions(cachedTransactions);
-          setIsLoading(false);
-          return;
-        }
-
         const newTransactions = await walletService.fetchAndCacheTransactions(
           address,
           caipNetworkId
         );
         setTransactions(newTransactions);
-        setIsLoading(false);
       } catch (err) {
         setError(err as Error);
         setTransactions([]);
+      } finally {
         setIsLoading(false);
       }
     };
