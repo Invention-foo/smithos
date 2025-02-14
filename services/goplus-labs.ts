@@ -1,5 +1,6 @@
 'use server'
 
+import { isRateLimited } from './rate-limiter'
 import { Json } from "@/types/supabase"
 
 interface TokenMetadata {
@@ -53,8 +54,14 @@ const DEAD_ADDRESSES = [
 
 export async function fetchTokenData(
   contractAddress: string, 
-  chainId: string
+  chainId: string,
+  userKey: string = 'default'
 ): Promise<TokenData | null> {
+  const { limited, waitTime } = await isRateLimited(userKey, 'GOPLUS')
+  if (limited) {
+    throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+  }
+
   const chainMap: Record<string, string> = {
     'ethereum': '1',
     'bsc': '56',

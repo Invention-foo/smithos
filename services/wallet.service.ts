@@ -5,6 +5,7 @@ import type { Transaction, Token, Pnl } from "../types/wallet";
 import { updateOrGetTokenSecurityStatus } from "@/lib/token-security";
 import { batchAuditContracts } from "./contract-audit";
 import { getBlockchainFromChainId } from "@/lib/wallet";
+import { isRateLimited } from "@/services/rate-limiter";
 
 export class WalletService {
   private static instance: WalletService;
@@ -52,7 +53,12 @@ export class WalletService {
   }
 
   // Transaction Methods
-  async fetchAndCacheTransactions(address: string, caipNetworkId: string): Promise<Transaction[]> {
+  async fetchAndCacheTransactions(address: string, caipNetworkId: string, userKey: string = 'default'): Promise<Transaction[]> {
+    const { limited, waitTime } = await isRateLimited(userKey, 'MORALIS')
+    if (limited) {
+      throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+    }
+
     const cacheKey = `${this.STORAGE_PREFIX}-transactions-${address}-${caipNetworkId}`;
     
     try {
@@ -110,7 +116,12 @@ export class WalletService {
   }
 
   // Wallet PnL Methods
-  async fetchAndCachePnl(address: string, caipNetworkId: string): Promise<Pnl | null> {
+  async fetchAndCachePnl(address: string, caipNetworkId: string, userKey: string = 'default'): Promise<Pnl | null> {
+    const { limited, waitTime } = await isRateLimited(userKey, 'MORALIS')
+    if (limited) {
+      throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+    }
+
     const cacheKey = `${this.STORAGE_PREFIX}-pnl-${address}-${caipNetworkId}`;
     try {
       if (caipNetworkId.startsWith("eip155")) {
@@ -151,7 +162,12 @@ export class WalletService {
   }
 
   // Token Methods
-  async fetchAndCacheTokens(address: string, caipNetworkId: string): Promise<Token[]> {
+  async fetchAndCacheTokens(address: string, caipNetworkId: string, userKey: string = 'default'): Promise<Token[]> {
+    const { limited, waitTime } = await isRateLimited(userKey, 'MORALIS')
+    if (limited) {
+      throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+    }
+
     const cacheKey = `${this.STORAGE_PREFIX}-tokens-${address}-${caipNetworkId}`;
     
     try {

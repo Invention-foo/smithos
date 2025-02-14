@@ -18,6 +18,8 @@ export async function auditToken({
     contractAddress,
     blockchain,
     userKey,
-    'CODESEER'
+    'CODESEER',
+    false,
+    '1' // needs to be updated to the actual chainID when user selects a different chain
   )
 } 

@@ -5,44 +5,7 @@ import { performContractAudit } from './gemini'
 import { fetchContractSourceCode } from './etherscan'
 import { fetchTokenData } from './goplus-labs'
 import { AuditResults, StoredAuditResult } from '@/types/audit'
-
-// Rate limiting configuration
-const RATE_LIMITS = {
-  CODESEER: {
-    MAX_REQUESTS: 3,
-    TIME_WINDOW: 60 * 1000, // 1 minute in ms
-  },
-  BATCH: {
-    MAX_REQUESTS: 20,
-    TIME_WINDOW: 60 * 1000,
-  }
-} as const
-
-// Track request timestamps per user/service
-const requestTracker = new Map<string, number[]>()
-
-function isRateLimited(key: string, type: 'CODESEER' | 'BATCH'): { limited: boolean; waitTime?: number } {
-  const now = Date.now()
-  const limit = RATE_LIMITS[type]
-  
-  // Get or initialize request history
-  const requests = requestTracker.get(key) || []
-  
-  // Clean old requests outside the time window
-  const validRequests = requests.filter(time => now - time < limit.TIME_WINDOW)
-  
-  // Check if rate limit exceeded
-  if (validRequests.length >= limit.MAX_REQUESTS) {
-    const oldestRequest = Math.min(...validRequests)
-    const waitTime = Math.ceil((oldestRequest + limit.TIME_WINDOW - now) / 1000)
-    return { limited: true, waitTime }
-  }
-  
-  // Update request history
-  validRequests.push(now)
-  requestTracker.set(key, validRequests)
-  return { limited: false }
-}
+import { isRateLimited } from './rate-limiter'
 
 function getDefaultLiveAudit() {
   return {
@@ -122,7 +85,7 @@ export async function auditContract(
   chainId?: string
 ): Promise<AuditResults> {
   if (!skipRateLimit) {
-    const { limited, waitTime } = isRateLimited(userKey, type)
+    const { limited, waitTime } = await isRateLimited(userKey, type)
     if (limited) {
       throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
     }
@@ -217,7 +180,7 @@ export async function batchAuditContracts(
 
   // Process new audits
   for (const contract of contractsToAudit) {
-    const { limited, waitTime } = isRateLimited(userKey, 'BATCH')
+    const { limited, waitTime } = await isRateLimited(userKey, 'BATCH')
     if (limited) {
       results[contract.address] = {
         error: `Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`

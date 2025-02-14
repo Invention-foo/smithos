@@ -1,5 +1,7 @@
 'use server'
 
+import { isRateLimited } from './rate-limiter'
+
 interface EtherscanResponse {
   status: string
   message: string
@@ -20,7 +22,12 @@ interface EtherscanResponse {
   }[]
 }
 
-export async function fetchContractSourceCode(contractAddress: string, chainId?: string): Promise<string | null> {
+export async function fetchContractSourceCode(contractAddress: string, chainId?: string, userKey: string = 'default'): Promise<string | null> {
+  const { limited, waitTime } = await isRateLimited(userKey, 'ETHERSCAN')
+  if (limited) {
+    throw new Error(`Rate limit exceeded. Please wait ${waitTime} seconds before making more requests.`)
+  }
+
   const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY
 
   if (!ETHERSCAN_API_KEY) {
@@ -34,10 +41,6 @@ export async function fetchContractSourceCode(contractAddress: string, chainId?:
     chainId: chainId || '1',
     apikey: ETHERSCAN_API_KEY
   })
-
-  if (chainId) {
-    params.append('chainId', chainId)
-  }
 
   console.log(params.toString())
 
