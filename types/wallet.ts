@@ -1,7 +1,7 @@
 export interface Transaction {
   timestamp: string;
   value: string;
-  direction: 'sent' | 'received'; 
+  direction: 'Sent' | 'Received'; 
   hash: string;
   tokenName?: string;
   tokenSymbol: string;

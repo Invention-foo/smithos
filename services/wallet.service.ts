@@ -259,7 +259,7 @@ export class WalletService {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
         value: (tx.value / Math.pow(10, 18)).toString(),
-        direction: tx.from_address === address ? 'sent' : 'received',
+        direction: tx.from_address === address ? 'Sent' : 'Received',
         hash: tx.hash,
         tokenName: "Ethereum",
         tokenSymbol: "ETH",
@@ -271,7 +271,7 @@ export class WalletService {
       formattedTransactions = txs.map(tx => ({
         timestamp: new Date(tx.block_timestamp).toISOString(),
         value: (tx.value / Math.pow(10, tx.token_decimals)).toString(),
-        direction: tx.from_address === address ? 'sent' : 'received',
+        direction: tx.from_address === address ? 'Sent' : 'Received',
         hash: tx.transaction_hash,
         tokenName: tx.token_name,
         tokenSymbol: tx.token_symbol,
