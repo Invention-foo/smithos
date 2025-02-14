@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sliders, Shield, Eye, Clock, User, Monitor, Terminal, Volume2 } from 'lucide-react';
+import { Monitor, Terminal, Volume2 } from 'lucide-react';
 import type { SettingsMenuProps } from '@/types/settings';
 import { SettingsTab } from './components/settings-tab';
 import { DisplaySettings } from './components/display-settings';

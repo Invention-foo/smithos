@@ -52,7 +52,7 @@ export function MenuWrapper({
       }
       menuEl.style.left = `${triggerRect.left}px`;
     }
-  }, [anchor]);
+  }, [anchor, triggerRef]);
 
   return (
     <div 

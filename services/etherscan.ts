@@ -31,6 +31,7 @@ export async function fetchContractSourceCode(contractAddress: string, chainId?:
     module: 'contract',
     action: 'getsourcecode',
     address: contractAddress,
+    chainId: chainId || '1',
     apikey: ETHERSCAN_API_KEY
   })
 

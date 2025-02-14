@@ -87,7 +87,7 @@ export function DocumentsModal({ onClose }: DocumentsModalProps) {
             </div>
           ) : (
             <div className="text-green-500 flex items-center justify-center h-full font-mono">
-              <span className="animate-pulse">> SELECT_RECORD_TO_VIEW_DETAILS</span>
+              <span className="animate-pulse">&gt; SELECT_RECORD_TO_VIEW_DETAILS</span>
             </div>
           )}
         </div>

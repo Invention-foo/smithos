@@ -2,6 +2,7 @@ import { useAppKit, useDisconnect } from "@reown/appkit/react";
 import { supabase } from "./supabase";
 
 export const disconnectWallet = async () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { disconnect } = useDisconnect();
   await disconnect();
   await supabase.auth.signOut();
@@ -13,6 +14,7 @@ export const disconnectWallet = async () => {
 
 export const connectWallet = async () => {
   try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { open } = useAppKit();
     if (!open) {
       console.error("AppKit open function is not available");

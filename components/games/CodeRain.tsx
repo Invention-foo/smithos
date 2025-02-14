@@ -76,7 +76,7 @@ export function CodeRain({ onClose }: CodeRainProps) {
   useEffect(() => {
     if (!gameOver) {
       const params = getGameParams(level)
-      let lastFrameY = new Map() // Track Y positions from last frame
+      const lastFrameY = new Map() // Track Y positions from last frame
       
       const spawnInterval = setInterval(() => {
         if (Math.random() < params.spawnRate) {
@@ -159,7 +159,7 @@ export function CodeRain({ onClose }: CodeRainProps) {
     if (newLevel !== level) {
       setLevel(newLevel)
     }
-  }, [score])
+  }, [score, level])
 
   return (
     <ModalWrapper onClose={onClose} className="p-6 rounded-lg w-[500px]">
@@ -223,7 +223,7 @@ export function CodeRain({ onClose }: CodeRainProps) {
 
       <div className="text-center mt-4 text-green-300">
         <p>Type the falling letters before they hit the bottom!</p>
-        <p>Three strikes and you're out!</p>
+        <p>Three strikes and you&apos;re out!</p>
         {currentInput && <p>Last typed: {currentInput}</p>}
       </div>
     </ModalWrapper>

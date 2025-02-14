@@ -1,4 +1,4 @@
-import { Token } from "@/hooks/use-token-holdings";
+import { Token } from "@/types/wallet";
 import React from "react";
 import { Card } from "@/components/ui/card";
 import {

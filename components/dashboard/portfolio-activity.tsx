@@ -6,6 +6,7 @@ import { usePnl } from "@/hooks/use-pnl";
 import { useTokenHoldings } from "@/hooks/use-token-holdings";
 import { Token } from "@/types/wallet";
 import { DollarSign, TrendingUp, BarChart2, ArrowLeftRight } from 'lucide-react';
+import { PnlData } from "@/types/pnl";
 
 export function PortfolioActivity() {
   const { tokens, isLoading: tokensLoading, error: tokensError } = useTokenHoldings();
@@ -53,7 +54,7 @@ export function PortfolioActivity() {
                 innerRadius={0}
                 outerRadius={80}
                 paddingAngle={2}
-                label={({ name, value, percent, x, y, midAngle }) => {
+                label={({ name, percent, x, y, midAngle }) => {
                   const radius = 90;
                   const RADIAN = Math.PI / 180;
                   const x1 = x + (radius - 80) * Math.cos(-midAngle * RADIAN);
@@ -130,7 +131,7 @@ export function PortfolioActivity() {
   );
 }
 
-function PnLSummary({ pnl }: { pnl: any }) {
+function PnLSummary({ pnl }: { pnl: PnlData }) {
   const summaryItems = [
     {
       label: "Total Profit/Loss",

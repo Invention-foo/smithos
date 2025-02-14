@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const evaluateSecurityRisks = (results: any) => {
   let message = "";
   // filter by token_symbol for USDC USDT

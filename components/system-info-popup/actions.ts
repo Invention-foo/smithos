@@ -41,8 +41,10 @@ export async function getSystemMetrics() {
         system: {
           eventLoopLatency: performanceMetrics.eventLoopLatency,
           heapUsage: performanceMetrics.heapUsage,
-          activeHandles: process._getActiveHandles().length,
-          activeRequests: process._getActiveRequests().length,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          activeHandles: (process as any)._getActiveHandles().length,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          activeRequests: (process as any)._getActiveRequests().length,
         }
       }
     };

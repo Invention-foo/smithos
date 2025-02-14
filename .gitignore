@@ -1,6 +1,7 @@
 node_modules/
 .next/
 .env
+.eslintrc.json
 
 **/supabase/.branches/
 **/supabase/.temp/

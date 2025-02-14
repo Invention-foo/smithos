@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { ethers } from "ethers";
-import nacl from "tweetnacl";
-import { decodeUTF8 } from "tweetnacl-util";
-import bs58 from "bs58";
+// import nacl from "tweetnacl";
+// import { decodeUTF8 } from "tweetnacl-util";
+// import bs58 from "bs58";
 
 export async function POST(request: Request) {
   try {

@@ -22,27 +22,27 @@ export function Terminal({ onClose }: TerminalProps) {
     fontSize: `${terminal.fontSize}px`,
   }
 
-  const blinkStyles = `
-    @keyframes blink {
-      0%, 49% { opacity: 1; }
-      50%, 100% { opacity: 0; }
-    }
-    .terminal-input input {
-      caret-color: transparent;  /* Hide the native cursor */
-    }
-    .terminal-input input::selection {
-      background: rgba(255, 255, 255, 0.3);  /* Custom selection color */
-    }
-    .terminal-cursor {
-      display: inline-block;
-      width: 8px;
-      height: 1em;
-      background-color: currentColor;
-      animation: blink ${terminal.blinkRate}ms step-end infinite;
-      vertical-align: middle;
-      margin-left: 1px;
-    }
-  `
+  // const blinkStyles = `
+  //   @keyframes blink {
+  //     0%, 49% { opacity: 1; }
+  //     50%, 100% { opacity: 0; }
+  //   }
+  //   .terminal-input input {
+  //     caret-color: transparent;  /* Hide the native cursor */
+  //   }
+  //   .terminal-input input::selection {
+  //     background: rgba(255, 255, 255, 0.3);  /* Custom selection color */
+  //   }
+  //   .terminal-cursor {
+  //     display: inline-block;
+  //     width: 8px;
+  //     height: 1em;
+  //     background-color: currentColor;
+  //     animation: blink ${terminal.blinkRate}ms step-end infinite;
+  //     vertical-align: middle;
+  //     margin-left: 1px;
+  //   }
+  // `
 
   useEffect(() => {
     if (inputRef.current) {
@@ -151,9 +151,6 @@ export function Terminal({ onClose }: TerminalProps) {
       <div className="h-full flex flex-col">
         <div className="flex justify-between items-center mb-2">
           <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500" />
-            <div className="w-3 h-3 rounded-full bg-green-500" />
           </div>
           <button onClick={onClose} className="text-green-500 hover:text-green-400">
             <X size={16} />

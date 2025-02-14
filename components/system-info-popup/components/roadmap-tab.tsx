@@ -17,6 +17,7 @@ interface RoadmapItem {
 }
 
 export function RoadmapTab() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [roadmapItems, setRoadmapItems] = useState<RoadmapItem[]>(
     roadmapData.items as unknown as RoadmapItem[]
   );

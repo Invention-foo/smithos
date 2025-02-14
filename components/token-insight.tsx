@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Search, BarChart2, Globe, Activity, Shield } from 'lucide-react';
+import { X, BarChart2, Globe, Activity, Shield } from 'lucide-react';
 import { ModalWrapper } from '@/components/modal-wrapper';
 
 interface TokenInsightProps {

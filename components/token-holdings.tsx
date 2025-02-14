@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
 import { TruncatedAddress } from "./truncated-address";
-import { useTokenHoldings, Token } from "@/hooks/use-token-holdings";
+import { useTokenHoldings } from "@/hooks/use-token-holdings";
 import { useAppKitAccount } from "@reown/appkit/react";
 import { disconnectWallet } from "@/lib/wallet";
 import TokenCard from "./TokenCard";

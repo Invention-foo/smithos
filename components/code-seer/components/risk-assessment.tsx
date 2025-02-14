@@ -1,4 +1,3 @@
-import { AlertTriangle } from 'lucide-react';
 import { RiskAssessmentData, Vulnerability, MaliciousPattern } from '@/types/audit';
 
 interface RiskAssessmentProps {

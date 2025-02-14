@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react';
-import { X, AlertTriangle, Search } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import { isAddress, getAddress } from 'ethers';
 import { RiskAssessment } from './components/risk-assessment';
 import { CodeAudit } from './components/code-audit';
@@ -48,7 +48,7 @@ export function CodeSeer({ onClose }: CodeSeerProps) {
       const checksumAddress = getAddress(value);
       setContractAddress(checksumAddress);
     } catch (error) {
-      setAddressError('Invalid address format');
+      setAddressError('Address error: ' + error);
       setContractAddress(value);
     }
   };

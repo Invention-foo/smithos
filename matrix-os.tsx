@@ -410,6 +410,7 @@ function ShutdownEffect({ onComplete }: { onComplete: () => void }) {
     const totalCells = columns * rows
 
     function draw() {
+      if (!ctx || !canvas) return;
       ctx.fillStyle = `rgba(0, 0, 0, ${0.1})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 

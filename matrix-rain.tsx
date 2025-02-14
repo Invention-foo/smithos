@@ -87,6 +87,7 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
     const b = parseInt(display.themeColor.slice(5, 7), 16)
 
     function draw() {
+      if (!ctx || !canvas) return;
       ctx.fillStyle = `rgba(0, 0, 0, ${0.05 * opacity})`
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -111,7 +112,7 @@ export const MatrixRain = forwardRef<MatrixRainRef, MatrixRainProps>(({ isFading
             ctx.fillText(messageChar.currentChar, x, y)
           } else {
             ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${messageChar.opacity})`
-            ctx.fillText(messageChar.char, messageChar.y)
+            ctx.fillText(messageChar.char, messageChar.x, messageChar.y)
           }
         } else {
           const text = chars[Math.floor(Math.random() * chars.length)]
