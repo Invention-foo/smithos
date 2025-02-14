@@ -1,6 +1,6 @@
 "use client";
 
-import { wagmiAdapter, projectId, solanaAdapter, networks } from "@/config";
+import { wagmiAdapter, projectId, networks } from "@/config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createAppKit } from "@reown/appkit/react";
 import React, { type ReactNode } from "react";
@@ -8,7 +8,7 @@ import { cookieToInitialState, WagmiProvider, type Config } from "wagmi";
 import {
   DefaultSIWX,
   EIP155Verifier,
-  SolanaVerifier,
+  // SolanaVerifier,
 } from "@reown/appkit-siwx";
 import SIWXLocalStorage, { SIWXMessenger } from "@/lib/siwx";
 
@@ -35,12 +35,18 @@ const siwx = new DefaultSIWX({
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15),
   }),
-  verifiers: [new EIP155Verifier(), new SolanaVerifier()],
+  verifiers: [
+    new EIP155Verifier(),
+    // new SolanaVerifier(),
+  ],
   storage: storage,
 });
 
 createAppKit({
-  adapters: [wagmiAdapter, solanaAdapter],
+  adapters: [
+    wagmiAdapter,
+    // solanaAdapter,
+  ],
   projectId,
   networks,
   defaultNetwork: networks[0],

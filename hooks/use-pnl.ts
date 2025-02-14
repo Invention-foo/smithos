@@ -1,52 +1,53 @@
 import { useState, useEffect } from "react";
 import { useAppKitAccount, useAppKitNetwork } from "@reown/appkit/react";
 import { walletService } from "@/services/wallet.service";
-import type { Token } from "@/types/wallet";
+import type { Pnl } from "@/types/wallet";
 
-export function useTokenHoldings() {
+export function usePnl() {
   const { address } = useAppKitAccount();
-  const [tokens, setTokens] = useState<Token[]>([]);
+  const [pnl, setPnl] = useState<Pnl | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { caipNetworkId } = useAppKitNetwork();
 
   useEffect(() => {
-    const fetchTokens = async () => {
+    const fetchPnl = async () => {
       if (!address || !caipNetworkId) {
-        setTokens([]);
+        setPnl(null);
         setIsLoading(false);
         return;
       }
 
-      // const storedTokens = walletService.getStoredTokens(address, caipNetworkId);
-      // if (storedTokens) {
-      //   setTokens(storedTokens);
+      // const storedPnl = walletService.getStoredPnl(address, caipNetworkId);
+      // if (storedPnl) {
+      //   setPnl(storedPnl);
       //   setIsLoading(false);
       //   return;
       // }
 
       setIsLoading(true);
       try {
-        const fetchedTokens = await walletService.fetchAndCacheTokens(address, caipNetworkId);
-        setTokens(fetchedTokens);
+        const fetchedPnl = await walletService.fetchAndCachePnl(address, caipNetworkId);
+        setPnl(fetchedPnl);
       } catch (error) {
-        console.error("Error fetching tokens:", error);
+        console.error("Error fetching PnL:", error);
         setError(error as Error);
-        setTokens([]);
+        setPnl(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTokens();
+    fetchPnl();
   }, [address, caipNetworkId]);
 
-  const clearTokenHoldings = () => {
-    setTokens([]);
+  const clearPnl = () => {
+    setPnl(null);
     if (address && caipNetworkId) {
-      walletService.clearStoredTokens(address, caipNetworkId);
+      walletService.clearStoredPnl(address, caipNetworkId);
     }
   };
 
-  return { tokens, isLoading, error, clearTokenHoldings };
+  return { pnl, isLoading, error, clearPnl };
 }
+
