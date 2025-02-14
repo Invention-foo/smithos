@@ -50,22 +50,53 @@ export function PortfolioActivity() {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
+                innerRadius={0}
                 outerRadius={80}
                 paddingAngle={2}
-                label={({ name, value, percent }) => 
-                  `${name} (${(percent * 100).toFixed(1)}%)`
-                }
+                label={({ name, value, percent, x, y, midAngle }) => {
+                  const radius = 90;
+                  const RADIAN = Math.PI / 180;
+                  const x1 = x + (radius - 80) * Math.cos(-midAngle * RADIAN);
+                  const y1 = y + (radius - 80) * Math.sin(-midAngle * RADIAN);
+                  return (
+                    <text
+                      x={x1}
+                      y={y1}
+                      fill="var(--theme-color)"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize="smaller"
+                    >
+                      {`${name} (${(percent * 100).toFixed(1)}%)`}
+                    </text>
+                  );
+                }}
                 labelLine={false}
               >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={`hsl(${index * (360 / chartData.length)}, 80%, 65%)`}
-                    stroke="hsl(var(--green-950))"
-                    strokeWidth={1}
-                  />
-                ))}
+                {chartData.map((entry, index) => {
+                  // Predefined distinct colors for better visibility
+                  const colors = [
+                    '#ff0000', // Red
+                    '#00ffff', // Cyan
+                    '#ff00ff', // Magenta
+                    '#ffff00', // Yellow
+                    '#ff0000', // Red
+                    '#0000ff', // Blue
+                    '#ff8000', // Orange
+                    '#8000ff', // Purple
+                    '#00ff80', // Spring Green
+                    '#ff0080', // Pink
+                    '#00ff00', // Matrix Green
+                  ];
+                  return (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={colors[index % colors.length]}
+                      stroke="hsl(var(--green-950))"
+                      strokeWidth={1}
+                    />
+                  );
+                })}
               </Pie>
               <Tooltip 
                 formatter={(value: number) => `$${value.toLocaleString(undefined, {
@@ -74,11 +105,13 @@ export function PortfolioActivity() {
                 })}`}
                 contentStyle={{ 
                   background: 'hsl(var(--green-950))', 
-                  color: 'hsl(var(--green-300))', 
+                  color: 'color-mix(in srgb, var(--theme-color) 60%, white)',
                   border: '1px solid hsl(var(--green-400))',
                   borderRadius: '8px',
                   padding: '8px 12px',
-                }} 
+                }}
+                itemStyle={{ color: 'color-mix(in srgb, var(--theme-color) 60%, white)' }}
+                labelStyle={{ color: 'color-mix(in srgb, var(--theme-color) 60%, white)' }}
               />
               <Legend 
                 layout="vertical" 

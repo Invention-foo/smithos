@@ -7,6 +7,10 @@ export function useThemeColor() {
   const { display } = useSettingsStore();
 
   useEffect(() => {
+    // Clean up any existing theme styles first
+    const existingStyles = document.querySelectorAll('style[data-theme-styles]');
+    existingStyles.forEach(el => el.remove());
+
     // Convert hex to rgba
     const hexToRgba = (hex: string, alpha: number) => {
       const r = parseInt(hex.slice(1, 3), 16);
@@ -22,6 +26,7 @@ export function useThemeColor() {
     
     // Create dynamic styles
     const style = document.createElement('style');
+    style.setAttribute('data-theme-styles', 'true');  // Add identifier
     style.textContent = `
       /* Text colors - solid */
       .text-green-100 { color: color-mix(in srgb, var(--theme-color) 40%, white) !important; }
@@ -34,6 +39,7 @@ export function useThemeColor() {
       
       /* Text colors - with opacity */
       .text-green-300\\/90 { color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 60%, white) 90%, transparent) !important; }
+      .text-green-300\\/80 { color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 60%, white) 80%, transparent) !important; }
       .text-green-400\\/90 { color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white) 90%, transparent) !important; }
       .text-green-400\\/80 { color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white) 80%, transparent) !important; }
       .text-green-400\\/70 { color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white) 70%, transparent) !important; }
@@ -71,13 +77,23 @@ export function useThemeColor() {
       .bg-green-600\\/50 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, black) 50%, transparent) !important; }
       .bg-green-700\\/50 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 60%, black) 50%, transparent) !important; }
       .bg-green-800\\/50 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 40%, black) 50%, transparent) !important; }
+      .bg-green-900\\/40 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 30%, black) 40%, transparent) !important; }
       .bg-green-900\\/50 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 30%, black) 50%, transparent) !important; }
+      .bg-green-900\\/60 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 30%, black) 60%, transparent) !important; }
+      .bg-green-950\\/50 { background-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 20%, black) 50%, transparent) !important; }
       
       .bg-green-500\\/30 { background-color: color-mix(in srgb, var(--theme-color) 30%, transparent) !important; }
       
       /* Border colors */
       .border-green-500 { border-color: var(--theme-color) !important; }
       .border-green-700 { border-color: color-mix(in srgb, var(--theme-color) 60%, black) !important; }
+      
+      /* Border colors - with opacity */
+      .border-green-400\\/10 { border-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white) 10%, transparent) !important; }
+      .border-green-400\\/20 { border-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white) 20%, transparent) !important; }
+      .border-green-400\\/30 { border-color: color-mix(in srgb, color-mix(in srgb, var(--theme-color) 80%, white) 30%, transparent) !important; }
+      .border-green-500\\/20 { border-color: color-mix(in srgb, var(--theme-color) 20%, transparent) !important; }
+      .border-green-500\\/30 { border-color: color-mix(in srgb, var(--theme-color) 30%, transparent) !important; }
       
       /* Matrix background effect */
       .matrix-bg::before {
@@ -134,6 +150,14 @@ export function useThemeColor() {
         --chart-color: ${display.themeColor};
         --chart-color-20: ${hexToRgba(display.themeColor, 0.2)};
       }
+
+      /* Gradient colors */
+      .from-green-950 { --tw-gradient-from: color-mix(in srgb, var(--theme-color) 20%, black) !important; }
+      .to-green-900 { --tw-gradient-to: color-mix(in srgb, var(--theme-color) 30%, black) !important; }
+
+      /* Data state colors */
+      .data-\\[state\\=active\\]\\:bg-green-900\\/30 { background-color: color-mix(in srgb, var(--theme-color) 70%, black) !important; }
+      .data-\\[state\\=active\\]\\:text-green-300 { color: color-mix(in srgb, var(--theme-color) 60%, white) !important; }
     `;
     
     document.head.appendChild(style);

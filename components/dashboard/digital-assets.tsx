@@ -24,7 +24,7 @@ export function DigitalAssets() {
   };
 
   return (
-    <Card className="bg-green-950/50 backdrop-blur-sm border-green-400/20 w-full shadow-lg">
+    <Card className="bg-green-900/50 border border-green-500 mb-4 w-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="text-green-300 text-sm">
           {tokens.length} Token{tokens.length === 1 ? "" : "s"} Found
