@@ -19,7 +19,7 @@ export const connectWallet = async () => {
       return;
     }
 
-    await open();
+    await open({ view: 'Connect' });
   } catch (error) {
     if (error instanceof Error) {
       console.error("Wallet connection error:", {

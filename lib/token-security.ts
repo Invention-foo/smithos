@@ -3,7 +3,9 @@ import { supabase } from "./supabase";
 const evaluateSecurityRisks = (results: any) => {
   let message = "";
   // filter by token_symbol for USDC USDT
-  const safeTokens = ['USDC', 'USDT'];
+  // TODO: this is a temporary solution to filter out USDC and USDT
+  // TODO: we should filter by chainId and token_address instead
+  const safeTokens = ['USDC', 'USDT', 'VIRTUAL'];
   if (safeTokens.includes(results?.token_symbol)) {
     return { status: "green", message: "No significant risks detected."};
   }
