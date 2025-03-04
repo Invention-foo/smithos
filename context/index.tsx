@@ -49,7 +49,6 @@ createAppKit({
   ],
   projectId,
   networks,
-  defaultNetwork: networks[0],
   metadata: metadata,
   siwx: siwx,
   features: {
