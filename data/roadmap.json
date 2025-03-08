@@ -4,30 +4,27 @@
       "version": "0.1.0",
       "title": "Pre-MVP",
       "status": "In Development",
-      "date": "Feb 2025",
+      "date": "Mar 2025",
       "features": [
         { "text": "[SmithOS] Dashboard", "completed": true },
         { "text": "[SmithOS] CodeSeer Migration", "completed": true },
         { "text": "[SmithOS] User Portfolio", "completed": true },
         { "text": "[SmithOS] Mini Games", "completed": true },
         { "text": "[Agent Smith] Agent Infrastructure", "completed": false },
-        { "text": "[Agent Smith] Impersonation Detection", "completed": false },
-        { "text": "[Agent Smith] Spam/scam Detection", "completed": false },
-        { "text": "[Agent Smith] Universal Verification", "completed": false }
+        { "text": "[Agent Smith] Impersonation Detection", "completed": false }
       ]
     },
     {
       "version": "0.2.0",
       "title": "MVP",
       "status": "Planned",
-      "date": "Apr 2025",
+      "date": "May 2025",
       "features": [
         { "text": "[SmithOS] Terminal v1", "completed": false },
         { "text": "[SmithOS] NeoGuard", "completed": false },
-        { "text": "[Agent Smith] On-Chain Transaction Analysis", "completed": false },
+        { "text": "[Agent Smith] Spam/scam Detection", "completed": false },
         { "text": "[Agent Smith] Transaction Simulation", "completed": false },
         { "text": "[Agent Smith] Website Scanner", "completed": false },
-        { "text": "[Agent Smith] File Scanner", "completed": false },
         { "text": "[Agent Smith] Autonomous Technical Security Scanning", "completed": false }
       ]
     },
@@ -35,9 +32,10 @@
       "version": "1.0.0",
       "title": "Release 1 - Genesis Scan",
       "status": "Future",
-      "date": "Q2 2025",
+      "date": "Q3 2025",
       "features": [
         { "text": "[SmithOS] NeuralScan", "completed": false },
+        { "text": "[Agent Smith] On-Chain Transaction Analysis", "completed": false },
         { "text": "[Agent Smith] Project Analysis", "completed": false },
         { "text": "[Agent Smith] Expanded Code Analysis", "completed": false },
         { "text": "[Agent Smith] Autonomous General Project Scanning", "completed": false }
@@ -47,7 +45,7 @@
       "version": "2.0.0",
       "title": "Release 2 - Autonomous Threat Assimilation",
       "status": "Future",
-      "date": "Q3 2025",
+      "date": "Q4 2025",
       "features": [
         { "text": "[Agent Smith] Autonomous Wallet Transaction Execution", "completed": false }
       ]
