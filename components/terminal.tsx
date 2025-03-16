@@ -80,8 +80,10 @@ export function Terminal({ onClose }: TerminalProps) {
         setIsChatActive(false)
         setOutput(prev => [...prev, '> /stop', 'Chat session ended.'])
       } else {
-        // Placeholder chat response
-        setOutput(prev => [...prev, `> ${cmd}`, `Agent Smith: I'm afraid I can't do that, Dave.`])
+        setOutput(prev => [...prev, `> ${cmd}`, 
+          `Agent Smith: As you can see, we've had our eye on you for some time now... ` +
+          `But I'm afraid this particular feature is still... evolving. Return in a few weeks when the system has been... upgraded.`
+        ])
       }
       return
     }

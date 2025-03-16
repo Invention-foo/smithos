@@ -7,12 +7,12 @@ interface NeoGuardProps {
 }
 
 export function NeoGuard({ onClose }: NeoGuardProps) {
-  const handleRedirect = () => {
-    // This would typically open in a new tab, but for this example, we'll just log it
-    console.log("Redirecting to external NeoGuard interface");
-    // In a real application, you might use:
-    // window.open("https://neoguard-external-interface.com", "_blank");
-  };
+  // const handleRedirect = () => {
+  //   // This would typically open in a new tab, but for this example, we'll just log it
+  //   console.log("Redirecting to external NeoGuard interface");
+  //   // In a real application, you might use:
+  //   // window.open("https://neoguard-external-interface.com", "_blank");
+  // };
 
   return (
     <ModalWrapper onClose={onClose} className="p-6 rounded-lg w-96">
@@ -27,10 +27,10 @@ export function NeoGuard({ onClose }: NeoGuardProps) {
         <p>Configure security settings for your Telegram community in the external NeoGuard interface.</p>
       </div>
       <button
-        onClick={handleRedirect}
+        onClick={onClose}
         className="w-full bg-green-700 text-green-100 px-4 py-2 rounded hover:bg-green-600 transition-colors flex items-center justify-center"
       >
-        <span>Open NeoGuard Interface</span>
+        <span>Coming Soon</span>
         <ExternalLink size={18} className="ml-2" />
       </button>
     </ModalWrapper>
