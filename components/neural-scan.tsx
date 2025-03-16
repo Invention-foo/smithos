@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, BarChart2, Globe, Activity, Shield } from 'lucide-react';
+import { X, BarChart2, Globe, Activity, Shield, AlertTriangle } from 'lucide-react';
 import { ModalWrapper } from '@/components/modal-wrapper';
 
 interface NeuralScanProps {
@@ -18,6 +18,25 @@ export function NeuralScan({ onClose }: NeuralScanProps) {
 
   return (
     <ModalWrapper onClose={onClose} className="p-6 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-y-auto">
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-10 flex items-center justify-center">
+        <div className="text-center p-6 max-w-md">
+          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h3 className="text-xl text-green-300 mb-2">Coming Soon</h3>
+          <p className="text-green-400/80">
+            NeuralScan is currently in development and will be available in a future update. 
+            Check the roadmap for more details.
+          </p>
+          <button
+            onClick={onClose}
+            className="mt-6 px-6 py-2 bg-green-700 text-green-100 rounded hover:bg-green-600 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+
+      {/* Original content (blurred behind overlay) */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl text-green-500">NeuralScan</h2>
         <button onClick={onClose} className="text-green-500 hover:text-green-400">
