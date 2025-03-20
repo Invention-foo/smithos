@@ -171,9 +171,8 @@ function MainOS({
       
       <div className="absolute inset-0 flex items-center justify-center z-[5] pointer-events-none">
         <div className="text-green-400/70 text-2xl font-bold tracking-wider animate-pulse-glow">
-          $SMITH - Coming soon on Virtuals Protocol
+          Agent $SMITH by Virtuals - 0x991ab5d07F28232EC1677e2c13239fB9b4B9CcB7
           <br />
-          Deployer Address: TBD...
         </div>
       </div>
 
