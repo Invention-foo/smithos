@@ -30,6 +30,14 @@ export function AgentSmith({ onComplete, onSkip }: { onComplete: () => void, onS
             Skip Effect
           </button>
         </div>
+        <div className="mt-8 text-gray-500 text-xs max-w-md mx-auto">
+          <p className="mb-2">
+            Agent Smith is a product of, and its tokens and operations are issued and managed by, Athena AI Labs LLC, a Texas Limited Liability Company.
+          </p>
+          <p>
+            Disclaimer: By accessing this site, app, or any products provided by Agent Smith, you acknowledge that no content or information presented constitutes investment advice, financial recommendations, or guidance related to any form of investment.
+          </p>
+        </div>
       </div>
     </div>
   )
