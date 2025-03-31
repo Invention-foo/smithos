@@ -187,8 +187,8 @@ function MainOS({
       <div className="relative z-10">
         {/* Desktop Icons */}
         <div className="p-2 grid grid-cols-4 gap-4">
-          {/* Top Left - Interactive Programs */}
-          <div className="col-span-2 grid grid-cols-2 gap-1 w-48">
+          {/* Top Left - Interactive Programs - MODIFIED CSS */}
+          <div className="col-span-2 grid grid-cols-2 gap-x-1 gap-y-4 w-48 content-start">
             <DesktopIcon icon={<TerminalIcon />} label="Terminal" onClick={() => setShowTerminal(true)} />
             <DesktopIcon icon={<BarChart2 />} label="Dashboard" onClick={() => setShowDashboard(true)} />
             <DesktopIcon icon={<Code />} label="CodeSeer" onClick={() => setShowCodeSeer(true)} />
@@ -197,7 +197,7 @@ function MainOS({
           </div>
 
           {/* Top Right - System Folders */}
-          <div className="col-start-4 flex flex-col items-end">
+          <div className="col-start-4 flex flex-col items-end gap-4">
             <DesktopIcon icon={<Monitor />} label="This Computer" onClick={() => setShowSystemInfo(true)} />
             <DesktopIcon icon={<Folder />} label="Documents" onClick={() => setShowDocuments(true)} />
             <DesktopIcon icon={<Gamepad2 />} label="Games" onClick={() => setShowGames(true)} />
