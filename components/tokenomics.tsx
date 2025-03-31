@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { X, PieChart, Copy, Check } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Copy, Check } from 'lucide-react';
 import { ModalWrapper } from '@/components/modal-wrapper';
 import { ResponsiveContainer, PieChart as RechartPieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { useSettingsStore } from '@/stores/useSettingsStore';
@@ -175,7 +175,7 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
                       ))}
                     </Pie>
                     <RechartsTooltip 
-                      formatter={(value, name, props) => {
+                      formatter={(value, name) => {
                         const item = tokenomicsData.find(item => item.name === name);
                         return [`${name}: ${value}% (${item?.tokens.toLocaleString()} tokens)`, ''];
                       }}
@@ -190,7 +190,7 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
                       }}
                     />
                     <Legend 
-                      formatter={(value, entry, index) => (
+                      formatter={(value) => (
                         <span className="text-xs">{value}</span>
                       )}
                       iconType="circle"
