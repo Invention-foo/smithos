@@ -219,33 +219,36 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-3 bg-green-800 rounded">
-                  <h4 className="font-medium text-green-200 mb-2">Premium Access</h4>
+                  <h4 className="font-medium text-green-200 mb-2">Priority Access</h4>
                   <p className="text-sm text-green-300">
-                    Token holders gain access to advanced features in SmithOS, including enhanced security scanning, 
-                    priority analysis, and exclusive tools.
+                    While some Agent features like impersonation and scam/spam detection on X/Twitter are free to use, 
+                    $SMITH holders have their requests prioritized. The more tokens you hold, the higher your priority in the queue.
+                  </p>
+                </div>
+                <div className="p-3 bg-green-800 rounded">
+                  <h4 className="font-medium text-green-200 mb-2">Platform Features</h4>
+                  <p className="text-sm text-green-300">
+                    SmithOS.ai offers limited free queries per day (e.g., CodeSeer: 3 free queries). 
+                    Holding 0.1% of $SMITH supply grants unlimited queries and full platform access.
+                  </p>
+                </div>
+                <div className="p-3 bg-green-800 rounded">
+                  <h4 className="font-medium text-green-200 mb-2">NeoGuard Access</h4>
+                  <p className="text-sm text-green-300">
+                    NeoGuard is available for free self-service use if you hold 0.1% of token supply. 
+                    Alternatively, users can pay monthly via fiat or $SMITH tokens. All $SMITH paid for subscriptions is burned, reducing total supply.
                   </p>
                 </div>
                 <div className="p-3 bg-green-800 rounded">
                   <h4 className="font-medium text-green-200 mb-2">Governance</h4>
                   <p className="text-sm text-green-300">
                     $SMITH holders can vote on protocol upgrades, feature prioritization, and ecosystem development 
-                    through the decentralized governance system.
+                    through the decentralized governance system. Specific token balance requirements are currently TBD.
                   </p>
                 </div>
-                <div className="p-3 bg-green-800 rounded">
-                  <h4 className="font-medium text-green-200 mb-2">Staking Rewards</h4>
-                  <p className="text-sm text-green-300">
-                    Stake your tokens to earn passive income through protocol fees and incentives, 
-                    with higher APY for longer lock periods.
-                  </p>
-                </div>
-                <div className="p-3 bg-green-800 rounded">
-                  <h4 className="font-medium text-green-200 mb-2">Fee Discounts</h4>
-                  <p className="text-sm text-green-300">
-                    Holding $SMITH tokens provides discounts on platform services, with tiered benefits 
-                    based on the amount of tokens held.
-                  </p>
-                </div>
+              </div>
+              <div className="mt-4 text-green-200 text-sm italic">
+                Note: Specific token balance requirements for various tiers of access are currently TBD and will be announced as features are released.
               </div>
             </div>
 
@@ -255,14 +258,51 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
                 The $SMITH token implements a deflationary model with the following mechanisms:
               </p>
               <ul className="list-disc list-inside space-y-2 text-green-100 pl-4">
-                <li>2% of all transactions are automatically burned, reducing total supply over time</li>
+                <li>$SMITH tokens used for subscription payments are automatically burned, reducing total supply over time</li>
                 <li>Revenue from premium services is used for token buybacks and burns</li>
-                <li>Staking incentives encourage long-term holding and reduced circulating supply</li>
+                <li>Holding incentives encourage long-term ownership and reduced circulating supply</li>
                 <li>Governance treasury funded by protocol fees for sustainable development</li>
               </ul>
             </div>
 
             <div className="bg-green-800/50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-green-300 mb-3">Benefits Summary</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-green-100">
+                  <thead>
+                    <tr className="border-b border-green-700">
+                      <th className="text-left py-2 px-3">Feature</th>
+                      <th className="text-left py-2 px-3">Free Tier</th>
+                      <th className="text-left py-2 px-3">$SMITH Holders</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-green-800">
+                      <td className="py-2 px-3">Agent Features</td>
+                      <td className="py-2 px-3">Basic access</td>
+                      <td className="py-2 px-3">Priority queue based on holdings</td>
+                    </tr>
+                    <tr className="border-b border-green-800">
+                      <td className="py-2 px-3">CodeSeer</td>
+                      <td className="py-2 px-3">3 queries/day</td>
+                      <td className="py-2 px-3">Unlimited with 0.1% supply</td>
+                    </tr>
+                    <tr className="border-b border-green-800">
+                      <td className="py-2 px-3">NeoGuard</td>
+                      <td className="py-2 px-3">Paid subscription</td>
+                      <td className="py-2 px-3">Free with 0.1% supply</td>
+                    </tr>
+                    <tr className="border-b border-green-800">
+                      <td className="py-2 px-3">Governance</td>
+                      <td className="py-2 px-3">None</td>
+                      <td className="py-2 px-3">Voting rights (TBD)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* <div className="bg-green-800/50 p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-green-300 mb-3">Future Benefits</h3>
               <p className="text-green-200 mb-4">
                 The roadmap includes additional utility for $SMITH token holders:
@@ -274,7 +314,7 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
                 <li>Early access to new security tools and features</li>
                 <li>Revenue sharing from enterprise security services</li>
               </ul>
-            </div>
+            </div> */}
           </div>
         )}
       </div>
