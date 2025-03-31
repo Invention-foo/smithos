@@ -1,30 +1,78 @@
-import React, { useState } from 'react';
-import { X, PieChart } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, PieChart, Copy, Check } from 'lucide-react';
 import { ModalWrapper } from '@/components/modal-wrapper';
 import { ResponsiveContainer, PieChart as RechartPieChart, Pie, Cell, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { hexToRgb } from '@/hooks/useThemeColor';
 
 interface TokenomicsProps {
   onClose: () => void;
 }
 
-// Sample tokenomics data - replace with your actual data
+// Updated tokenomics data with actual allocations
 const tokenomicsData = [
-  { name: 'Team', value: 15, color: '#10B981' },
-  { name: 'Marketing', value: 10, color: '#059669' },
-  { name: 'Development', value: 15, color: '#047857' },
-  { name: 'Liquidity', value: 30, color: '#065F46' },
-  { name: 'Community', value: 30, color: '#064E3B' },
+  { name: 'Open Float (DEX Pool)', value: 12.5, tokens: 125000000 },
+  { name: 'Athena Airdrop', value: 33.46, tokens: 334575648 },
+  { name: 'Reserved for Late Claimers', value: 27.93, tokens: 279255257 },
+  { name: 'Team & Development', value: 13.11, tokens: 131084547 },
+  { name: 'Operations & Marketing', value: 13, tokens: 130084548 },
 ];
 
 const totalSupply = 1000000000; // 1 billion tokens
 
 export function Tokenomics({ onClose }: TokenomicsProps) {
   const [activeTab, setActiveTab] = useState('distribution');
+  const [copied, setCopied] = useState(false);
+  const contractAddress = "0x991ab5d07F28232EC1677e2c13239fB9b4B9CcB7";
+  const { display } = useSettingsStore();
+  
+  // Generate colors based on theme color
+  const generateThemeColors = () => {
+    const baseColor = display.themeColor;
+    const { r, g, b } = hexToRgb(baseColor);
+    
+    return [
+      baseColor, // Main theme color
+      `rgba(${r}, ${g}, ${b}, 0.85)`, // 85% opacity
+      `rgba(${r}, ${g}, ${b}, 0.7)`,  // 70% opacity
+      `rgba(${r}, ${g}, ${b}, 0.55)`, // 55% opacity
+      `rgba(${r}, ${g}, ${b}, 0.4)`,  // 40% opacity
+    ];
+  };
+  
+  const themeColors = generateThemeColors();
+  
+  // Generate tooltip background color based on theme
+  const tooltipBgColor = () => {
+    const { r, g, b } = hexToRgb(display.themeColor);
+    return `rgba(${r}, ${g}, ${b}, 0.15)`; // Very light version of theme color
+  };
+  
+  // Generate tooltip text color based on theme
+  const tooltipTextColor = () => {
+    const { r, g, b } = hexToRgb(display.themeColor);
+    return `rgba(${r}, ${g}, ${b}, 0.9)`; // Slightly transparent version of theme color
+  };
 
   const tabs = [
     { id: 'distribution', label: 'Token Distribution' },
     { id: 'utility', label: 'Utility & Benefits' },
   ];
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(contractAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  // Function to truncate address for display
+  const truncateAddress = (address: string) => {
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
 
   return (
     <ModalWrapper onClose={onClose} className="rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
@@ -71,9 +119,18 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
                     <span className="text-green-300">Total Supply:</span>
                     <span className="text-green-100">{totalSupply.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-green-300">Contract:</span>
-                    <span className="text-green-100 text-sm">0x991ab5d07F28232EC1677e2c13239fB9b4B9CcB7</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-100 text-sm">{truncateAddress(contractAddress)}</span>
+                      <button 
+                        onClick={copyToClipboard} 
+                        className="text-green-400 hover:text-green-300 transition-colors"
+                        title="Copy contract address"
+                      >
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -81,10 +138,16 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
               <div className="bg-green-800/50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-green-300 mb-3">Token Allocation</h3>
                 <div className="space-y-2">
-                  {tokenomicsData.map((item) => (
-                    <div key={item.name} className="flex justify-between">
-                      <span className="text-green-300">{item.name}:</span>
-                      <span className="text-green-100">{item.value}% ({(totalSupply * item.value / 100).toLocaleString()})</span>
+                  {tokenomicsData.map((item, index) => (
+                    <div key={item.name} className="flex justify-between text-sm">
+                      <div className="flex items-center">
+                        <div 
+                          className="w-3 h-3 rounded-full mr-2" 
+                          style={{ backgroundColor: themeColors[index % themeColors.length] }}
+                        ></div>
+                        <span className="text-green-300 mr-2">{item.name}:</span>
+                      </div>
+                      <span className="text-green-100 text-right">{item.value}% ({item.tokens.toLocaleString()})</span>
                     </div>
                   ))}
                 </div>
@@ -96,31 +159,51 @@ export function Tokenomics({ onClose }: TokenomicsProps) {
               <h3 className="text-lg font-semibold text-green-300 mb-3">Allocation Distribution</h3>
               <div className="flex-grow">
                 <ResponsiveContainer width="100%" height={300}>
-                  <RechartPieChart>
+                  <RechartPieChart margin={{ left: 20, right: 10, top: 10, bottom: 10 }}>
                     <Pie
                       data={tokenomicsData}
-                      cx="50%"
+                      cx="45%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={100}
+                      outerRadius={70}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={false}
                     >
                       {tokenomicsData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={themeColors[index % themeColors.length]} />
                       ))}
                     </Pie>
                     <RechartsTooltip 
-                      formatter={(value) => [`${value}% (${(totalSupply * Number(value) / 100).toLocaleString()} tokens)`, 'Allocation']}
-                      contentStyle={{ backgroundColor: '#064e3b', borderColor: '#10b981', color: '#ecfdf5' }}
+                      formatter={(value, name, props) => {
+                        const item = tokenomicsData.find(item => item.name === name);
+                        return [`${name}: ${value}% (${item?.tokens.toLocaleString()} tokens)`, ''];
+                      }}
+                      contentStyle={{ 
+                        backgroundColor: tooltipBgColor(), 
+                        borderColor: display.themeColor, 
+                        color: tooltipTextColor(),
+                        padding: '8px',
+                        borderRadius: '4px',
+                        fontWeight: 'bold',
+                        fontSize: '12px'
+                      }}
                     />
-                    <Legend />
+                    <Legend 
+                      formatter={(value, entry, index) => (
+                        <span className="text-xs">{value}</span>
+                      )}
+                      iconType="circle"
+                      layout="vertical"
+                      verticalAlign="middle"
+                      align="right"
+                      wrapperStyle={{ paddingLeft: '20px' }}
+                    />
                   </RechartPieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="mt-4 text-green-300 text-sm">
-                <p>The token distribution is designed to ensure long-term sustainability and community governance of the Agent Smith ecosystem.</p>
+              <div className="mt-4 text-green-300 text-xs">
+                <p>The token distribution prioritizes community ownership with over 60% allocated to Athena holders and public liquidity.</p>
               </div>
             </div>
           </div>
