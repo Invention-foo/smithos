@@ -17,6 +17,8 @@ import {
   Gamepad2,
   X,
   Pill,
+  PieChart,
+  FileText,
 } from "lucide-react"
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
@@ -38,6 +40,7 @@ import { RedPillBluePill } from "@/components/games/RedPillBluePill"
 import { ModalWrapper } from '@/components/modal-wrapper'
 import { CodeRain } from "@/components/games/CodeRain"
 import Clock from "./components/Clock"
+import { Tokenomics } from "./components/tokenomics"
 
 
 export default function MatrixOS() {
@@ -141,6 +144,7 @@ function MainOS({
   const [showCodeSeer, setShowCodeSeer] = useState(false)
   const [showNeoGuard, setShowNeoGuard] = useState(false)
   const [showGames, setShowGames] = useState(false)
+  const [showTokenomics, setShowTokenomics] = useState(false)
   const [showRedPillBluePill, setShowRedPillBluePill] = useState(false)
   const [showCodeRain, setShowCodeRain] = useState(false)
   const { isConnected: isWalletConnected, address } = useWallet()
@@ -164,6 +168,10 @@ function MainOS({
     setShowCodeRain(false)
     setShowGames(false)
   }
+
+  const openWhitepaper = () => {
+    window.open('https://docs.smithos.ai', '_blank');
+  };
 
   return (
     <div className="bg-black text-green-500 min-h-screen font-mono relative overflow-hidden" style={{ opacity }}>
@@ -193,6 +201,8 @@ function MainOS({
             <DesktopIcon icon={<Monitor />} label="This Computer" onClick={() => setShowSystemInfo(true)} />
             <DesktopIcon icon={<Folder />} label="Documents" onClick={() => setShowDocuments(true)} />
             <DesktopIcon icon={<Gamepad2 />} label="Games" onClick={() => setShowGames(true)} />
+            <DesktopIcon icon={<PieChart />} label="Tokenomics" onClick={() => setShowTokenomics(true)} />
+            <DesktopIcon icon={<FileText />} label="Whitepaper" onClick={openWhitepaper} />
           </div>
         </div>
 
@@ -268,10 +278,14 @@ function MainOS({
                       <button
                         className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
                         onClick={() => {
+                          setShowTokenomics(true);
+                          setShowProgramsMenu(false);
                           setShowStartMenu(false);
                         }}
                       >
-                        TokenInsight
+                        <div className="flex items-center">
+                          Tokenomics
+                        </div>
                       </button>
                       <button
                         className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
@@ -290,6 +304,15 @@ function MainOS({
                         }}
                       >
                         Terminal
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          openWhitepaper();
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        Whitepaper
                       </button>
                     </div>
                   </div>
@@ -377,6 +400,7 @@ function MainOS({
         {showCodeRain && (
           <CodeRain onClose={handleCloseGame} />
         )}
+        {showTokenomics && <Tokenomics onClose={() => setShowTokenomics(false)} />}
       </div>
     </div>
   )

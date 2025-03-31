@@ -3,15 +3,15 @@
     {
       "version": "0.1.0",
       "title": "Pre-MVP",
-      "status": "In Development",
+      "status": "Completed",
       "date": "Mar 2025",
       "features": [
         { "text": "[SmithOS] Dashboard", "completed": true },
         { "text": "[SmithOS] CodeSeer Migration", "completed": true },
         { "text": "[SmithOS] User Portfolio", "completed": true },
         { "text": "[SmithOS] Mini Games", "completed": true },
-        { "text": "[Agent Smith] Agent Infrastructure", "completed": false },
-        { "text": "[Agent Smith] Impersonation Detection", "completed": false }
+        { "text": "[Agent Smith] Agent Infrastructure", "completed": true },
+        { "text": "[Agent Smith] Impersonation Detection", "completed": true }
       ]
     },
     {
