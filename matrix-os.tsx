@@ -18,6 +18,7 @@ import {
   X,
   Pill,
   PieChart,
+  FileText,
 } from "lucide-react"
 import { BootSequence } from "./boot-sequence"
 import { AgentSmith } from "./agent-smith"
@@ -168,6 +169,10 @@ function MainOS({
     setShowGames(false)
   }
 
+  const openWhitepaper = () => {
+    window.open('https://docs.smithos.ai', '_blank');
+  };
+
   return (
     <div className="bg-black text-green-500 min-h-screen font-mono relative overflow-hidden" style={{ opacity }}>
       <div className="absolute inset-0 matrix-bg"></div>
@@ -197,6 +202,7 @@ function MainOS({
             <DesktopIcon icon={<Folder />} label="Documents" onClick={() => setShowDocuments(true)} />
             <DesktopIcon icon={<Gamepad2 />} label="Games" onClick={() => setShowGames(true)} />
             <DesktopIcon icon={<PieChart />} label="Tokenomics" onClick={() => setShowTokenomics(true)} />
+            <DesktopIcon icon={<FileText />} label="Whitepaper" onClick={openWhitepaper} />
           </div>
         </div>
 
@@ -298,6 +304,15 @@ function MainOS({
                         }}
                       >
                         Terminal
+                      </button>
+                      <button
+                        className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
+                        onClick={() => {
+                          openWhitepaper();
+                          setShowStartMenu(false);
+                        }}
+                      >
+                        Whitepaper
                       </button>
                     </div>
                   </div>
