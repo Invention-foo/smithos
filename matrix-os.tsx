@@ -278,7 +278,6 @@ function MainOS({
                         }}
                       >
                         <div className="flex items-center">
-                          <PieChart className="mr-2" size={16} />
                           Tokenomics
                         </div>
                       </button>
