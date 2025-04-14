@@ -40,11 +40,17 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   const gameAreaWidth = 400
   const gameAreaHeight = 300
   const playerSize = 20
-  const gravity = 0.4
-  const jumpStrength = -7
+  const PHYSICS_STEP = 1000 / 60; // 60 FPS physics update
+  const MAX_VELOCITY = 15; // Cap the maximum velocity
+  const gravity = 0.5;  // Smaller gravity value
+  const jumpStrength = -8;  // Adjusted jump strength
   const obstacleWidth = 40
   const baseGapHeight = 120
   const obstacleSpeed = 2
+  const OBSTACLE_INTERVAL = 2000; // Time between obstacles in ms
+
+  // At the top of the component, add a ref to track physics state
+  const physicsStateRef = useRef({ y: 150, velocity: 0 });
 
   // Load high score from localStorage
   useEffect(() => {
@@ -97,30 +103,28 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     }
   }, [gameStarted, gameOver])
 
+  // Update handleJump to modify both React state and physics state
   const handleJump = () => {
     if (!gameStarted && !gameOver) {
-      // Start the game immediately with the first jump
-      gameStartTimeRef.current = Date.now()
-      console.log(`[0ms] Game started`)
-      setGameStarted(true)
-      setPlayer(prev => {
-        console.log(`[0ms] Player jumped from y=${prev.y} with velocity=${jumpStrength}`)
-        return {
-          ...prev,
-          velocity: jumpStrength
-        }
-      })
+      gameStartTimeRef.current = Date.now();
+      console.log(`[0ms] Game started`);
+      setGameStarted(true);
+      // Update both states
+      physicsStateRef.current.velocity = jumpStrength;
+      setPlayer(prev => ({
+        ...prev,
+        velocity: jumpStrength
+      }));
     } else if (gameStarted && !gameOver) {
-      setPlayer(prev => {
-        console.log(`[${getElapsedTime()}ms] Player jumped from y=${prev.y} with velocity=${jumpStrength}`)
-        return {
-          ...prev,
-          velocity: jumpStrength
-        }
-      })
+      // Update both states
+      physicsStateRef.current.velocity = jumpStrength;
+      setPlayer(prev => ({
+        ...prev,
+        velocity: jumpStrength
+      }));
     } else if (gameOver) {
-      console.log(`[${getElapsedTime()}ms] Game reset`)
-      resetGame()
+      console.log(`[${getElapsedTime()}ms] Game reset`);
+      resetGame();
     }
   }
 
@@ -244,32 +248,55 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   useEffect(() => {
     if (!gameStarted || gameOver) return;
     
-    let lastTime = performance.now(); // Use performance.now() for more precise timing
+    let lastTime = performance.now();
+    let accumulator = 0;
     let lastObstacleTime = lastTime;
-    const obstacleInterval = 2000; // Base interval in milliseconds
+    
+    // Initialize physics state from current player state
+    physicsStateRef.current = {
+      y: player.y,
+      velocity: player.velocity
+    };
     
     const gameLoop = (timestamp: DOMHighResTimeStamp) => {
-      if (!gameStartTimeRef.current) {
-        gameStartTimeRef.current = performance.now();
-        lastTime = gameStartTimeRef.current;
-        lastObstacleTime = lastTime;
-        
-        // Generate first obstacle immediately
-        if (obstacles.length === 0) {
-          const firstObstacle = generateObstacle(true);
-          console.log(`[${getElapsedTime()}ms] Adding first obstacle`);
-          setObstacles([firstObstacle]);
+      const frameTime = Math.min(timestamp - lastTime, 50);
+      lastTime = timestamp;
+      accumulator += frameTime;
+      
+      while (accumulator >= PHYSICS_STEP) {
+        // Log the current state before update
+        console.log(`[${getElapsedTime()}ms] Physics update:
+          Previous: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}
+          Time step: ${PHYSICS_STEP}ms`);
+
+        // Update physics state using the ref
+        physicsStateRef.current.velocity = Math.min(MAX_VELOCITY, physicsStateRef.current.velocity + gravity);
+        physicsStateRef.current.y = physicsStateRef.current.y + physicsStateRef.current.velocity;
+
+        // Log the result after update
+        console.log(`[${getElapsedTime()}ms] After physics:
+          New: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}`);
+
+        if (physicsStateRef.current.y < 0 || physicsStateRef.current.y + playerSize > gameAreaHeight) {
+          console.log(`[${getElapsedTime()}ms] Game over: Player hit boundary at y=${physicsStateRef.current.y}`);
+          setGameOver(true);
+          return;
         }
+        
+        accumulator -= PHYSICS_STEP;
       }
       
-      const deltaTime = timestamp - lastTime;
-      lastTime = timestamp;
+      // Update React state from physics state
+      setPlayer({
+        y: physicsStateRef.current.y,
+        velocity: physicsStateRef.current.velocity
+      });
       
-      // Update game time (fix negative time issue)
+      // Update game time
       setGameTime(Math.max(0, performance.now() - gameStartTimeRef.current));
       
       // Check if it's time to generate a new obstacle
-      if (timestamp - lastObstacleTime >= obstacleInterval) {
+      if (timestamp - lastObstacleTime >= OBSTACLE_INTERVAL) {
         const newObstacle = generateObstacle();
         console.log(`[${getElapsedTime()}ms] Adding new obstacle, current count: ${obstacles.length}`);
         setObstacles(prevObstacles => {
@@ -282,30 +309,12 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         lastObstacleTime = timestamp;
       }
       
-      // Update player position with deltaTime
-      setPlayer(prev => {
-        const newVelocity = prev.velocity + (gravity * deltaTime / 16); // Scale gravity with deltaTime
-        const newY = prev.y + (newVelocity * deltaTime / 16); // Scale movement with deltaTime
-        
-        // Check for collision with boundaries
-        if (newY < 0 || newY + playerSize > gameAreaHeight) {
-          console.log(`[${getElapsedTime()}ms] Game over: Player hit boundary at y=${newY}`);
-          setGameOver(true);
-          return prev;
-        }
-        
-        return {
-          y: newY,
-          velocity: newVelocity
-        };
-      });
-      
       // Update obstacles and check for collisions
       setObstacles(prevObstacles => {
         // Move obstacles
         const updatedObstacles = prevObstacles.map(obstacle => {
           // Calculate movement based on deltaTime for smoother motion
-          const moveAmount = (obstacleSpeed * deltaTime) / 16; // Normalize to ~60fps
+          const moveAmount = (obstacleSpeed * frameTime) / 16; // Normalize to ~60fps
           const newX = obstacle.x - moveAmount;
           
           // Only check for passing if the obstacle hasn't been passed yet
@@ -320,27 +329,44 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
           
           // Check for collision with obstacle
           if (50 + playerSize > newX && 50 < newX + obstacleWidth) {
-            const playerTop = player.y;
-            const playerBottom = player.y + playerSize;
+            // Use physics state for collision detection
+            const playerTop = physicsStateRef.current.y;
+            const playerBottom = physicsStateRef.current.y + playerSize;
             
             let collision = false;
             
-            // Check if player is within the gap
-            const inFirstGap = playerTop >= obstacle.gapPosition && playerBottom <= obstacle.gapPosition + obstacle.gapHeight;
-            
             if (obstacle.type === 'normal') {
-              collision = !inFirstGap;
+              const tolerance = 5;
+              const hitTopPipe = playerTop < (obstacle.gapPosition - tolerance);
+              const hitBottomPipe = playerBottom > (obstacle.gapPosition + obstacle.gapHeight + tolerance);
+              collision = hitTopPipe || hitBottomPipe;
             } else if (obstacle.type === 'double' && obstacle.secondGapPosition) {
-              const inSecondGap = playerTop >= obstacle.secondGapPosition && playerBottom <= obstacle.secondGapPosition + obstacle.gapHeight;
-              collision = !inFirstGap && !inSecondGap;
+              const tolerance = 5;
+              const hitTopPipe = playerTop < (obstacle.gapPosition - tolerance);
+              const hitMiddlePipe = playerBottom > (obstacle.gapPosition + obstacle.gapHeight + tolerance) && 
+                                   playerTop < (obstacle.secondGapPosition - tolerance);
+              const hitBottomPipe = playerBottom > (obstacle.secondGapPosition + obstacle.gapHeight + tolerance);
+              collision = hitTopPipe || hitMiddlePipe || hitBottomPipe;
             }
             
             if (collision) {
-              console.log(`[${getElapsedTime()}ms] Game over: Collision detected
-                - Player position: y=${player.y}
-                - Obstacle position: x=${newX}, gap at y=${obstacle.gapPosition}
-                - Obstacle type: ${obstacle.type}
-                - Score: ${score}`);
+              console.log(`[${getElapsedTime()}ms] COLLISION DETECTED
+                Physics vs Visual State:
+                - Physics position: y=${physicsStateRef.current.y.toFixed(1)}
+                - Physics velocity: v=${physicsStateRef.current.velocity.toFixed(1)}
+                - Visual position: y=${player.y.toFixed(1)}
+                - Collision bounds: top=${playerTop.toFixed(1)}, bottom=${playerBottom.toFixed(1)}
+                
+                Obstacle state:
+                - Position: x=${newX.toFixed(1)}
+                - Gap: y=${obstacle.gapPosition.toFixed(1)} to ${(obstacle.gapPosition + obstacle.gapHeight).toFixed(1)}
+                - Type: ${obstacle.type}
+                
+                Time details:
+                - Frame time: ${frameTime.toFixed(1)}ms
+                - Accumulated time: ${accumulator.toFixed(1)}ms
+                
+                Score: ${score}`);
               setGameOver(true);
             }
           }
@@ -384,7 +410,23 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     
     return (
       <div key={obstacle.id}>
-        {/* Top pipe */}
+        {/* Collision boundaries visualization */}
+        <div className="absolute border-2 border-red-500/20" style={{
+          left: obstacle.x,
+          top: 0,
+          width: obstacleWidth,
+          height: gameAreaHeight,
+          pointerEvents: 'none',
+        }}>
+          {/* Safe zone (gap) */}
+          <div className="absolute border-2 border-green-500/50" style={{
+            top: obstacle.gapPosition,
+            width: '100%',
+            height: obstacle.gapHeight,
+          }} />
+        </div>
+
+        {/* Visual pipes with restored appearance */}
         <div
           className={baseClasses}
           style={{
@@ -397,7 +439,6 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
           <div className="absolute bottom-0 w-full h-6 bg-green-600 border-t-2 border-green-300"></div>
         </div>
         
-        {/* Bottom pipe */}
         <div
           className={baseClasses}
           style={{
@@ -409,38 +450,6 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         >
           <div className="absolute top-0 w-full h-6 bg-green-600 border-b-2 border-green-300"></div>
         </div>
-        
-        {/* For double obstacles, render the second gap */}
-        {obstacle.type === 'double' && obstacle.secondGapPosition && (
-          <>
-            {/* Middle pipe */}
-            <div
-              className={baseClasses}
-              style={{
-                left: obstacle.x,
-                top: obstacle.gapPosition + obstacle.gapHeight,
-                width: obstacleWidth,
-                height: obstacle.secondGapPosition - (obstacle.gapPosition + obstacle.gapHeight),
-              }}
-            >
-              <div className="absolute bottom-0 w-full h-6 bg-green-600 border-t-2 border-green-300"></div>
-              <div className="absolute top-0 w-full h-6 bg-green-600 border-b-2 border-green-300"></div>
-            </div>
-            
-            {/* Bottom pipe after second gap */}
-            <div
-              className={baseClasses}
-              style={{
-                left: obstacle.x,
-                top: obstacle.secondGapPosition + obstacle.gapHeight,
-                width: obstacleWidth,
-                height: gameAreaHeight - (obstacle.secondGapPosition + obstacle.gapHeight),
-              }}
-            >
-              <div className="absolute top-0 w-full h-6 bg-green-600 border-b-2 border-green-300"></div>
-            </div>
-          </>
-        )}
       </div>
     );
   };
@@ -544,6 +553,44 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
             </div>
           </div>
         )}
+
+        {/* Enhanced debug visualization */}
+        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+          {/* Y-axis ruler */}
+          {Array.from({ length: 30 }).map((_, i) => (
+            <div key={`ruler-${i * 10}`} className="relative border-t border-gray-500/20">
+              <span className="absolute left-0 text-[8px] text-gray-500/50">{i * 10}px</span>
+            </div>
+          ))}
+          
+          {/* Player bounds */}
+          <div 
+            className="absolute left-0 w-full border-t border-red-500/50" 
+            style={{ top: player.y }}>
+            <span className="text-[8px] text-red-500/50">Player top: {Math.round(player.y)}px</span>
+          </div>
+          <div 
+            className="absolute left-0 w-full border-t border-red-500/50" 
+            style={{ top: player.y + playerSize }}>
+            <span className="text-[8px] text-red-500/50">Player bottom: {Math.round(player.y + playerSize)}px</span>
+          </div>
+          
+          {/* Obstacle bounds */}
+          {obstacles.map(obstacle => (
+            <div key={`debug-${obstacle.id}`}>
+              <div 
+                className="absolute left-0 w-full border-t border-blue-500/50" 
+                style={{ top: obstacle.gapPosition }}>
+                <span className="text-[8px] text-blue-500/50">Gap top: {Math.round(obstacle.gapPosition)}px</span>
+              </div>
+              <div 
+                className="absolute left-0 w-full border-t border-blue-500/50" 
+                style={{ top: obstacle.gapPosition + obstacle.gapHeight }}>
+                <span className="text-[8px] text-blue-500/50">Gap bottom: {Math.round(obstacle.gapPosition + obstacle.gapHeight)}px</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="text-center mt-4 text-green-300">
