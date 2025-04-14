@@ -20,6 +20,7 @@ interface Obstacle {
   type: 'normal' | 'double'
   secondGapPosition?: number
   positionType?: string
+  speed: number
 }
 
 export function CodeCrash({ onClose }: CodeCrashProps) {
@@ -46,8 +47,9 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   const jumpStrength = -8;  // Adjusted jump strength
   const obstacleWidth = 40
   const baseGapHeight = 120
-  const obstacleSpeed = 2
-  const OBSTACLE_INTERVAL = 2000; // Time between obstacles in ms
+  const obstacleSpeed = 4
+  const MIN_OBSTACLE_INTERVAL = 400; // Reduced to 0.4s
+  const MAX_OBSTACLE_INTERVAL = 2000; // Keep max at 2s
 
   // At the top of the component, add a ref to track physics state
   const physicsStateRef = useRef({ y: 150, velocity: 0 });
@@ -156,7 +158,8 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         gapHeight,
         passed: false,
         type: 'normal',
-        positionType
+        positionType,
+        speed: obstacleSpeed + (Math.random() * 0.5) // Add slight speed variation
       };
     } else {
       // Determine gap position based on patterns
@@ -223,7 +226,8 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
           passed: false,
           type: 'double',
           secondGapPosition,
-          positionType
+          positionType,
+          speed: obstacleSpeed + (Math.random() * 0.5) // Add slight speed variation
         };
       } else {
         console.log(`[${getElapsedTime()}ms] Generated obstacle: 
@@ -238,7 +242,8 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
           gapHeight,
           passed: false,
           type: 'normal',
-          positionType
+          positionType,
+          speed: obstacleSpeed + (Math.random() * 0.5) // Add slight speed variation
         };
       }
     }
@@ -296,12 +301,18 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
       setGameTime(Math.max(0, performance.now() - gameStartTimeRef.current));
       
       // Check if it's time to generate a new obstacle
-      if (timestamp - lastObstacleTime >= OBSTACLE_INTERVAL) {
+      if (timestamp - lastObstacleTime >= lastObstacleRef.current) {
         const newObstacle = generateObstacle();
-        console.log(`[${getElapsedTime()}ms] Adding new obstacle, current count: ${obstacles.length}`);
+        console.log(`[${getElapsedTime()}ms] Adding new obstacle:
+          - Interval: ${lastObstacleRef.current.toFixed(0)}ms
+          - Current count: ${obstacles.length}`);
+        
         setObstacles(prevObstacles => {
           // Only add new obstacle if we don't have too many
           if (prevObstacles.length < 5) { // Limit max obstacles
+            // Generate next interval for variety
+            lastObstacleRef.current = MIN_OBSTACLE_INTERVAL + 
+              Math.random() * (MAX_OBSTACLE_INTERVAL - MIN_OBSTACLE_INTERVAL);
             return [...prevObstacles, newObstacle];
           }
           return prevObstacles;
@@ -314,7 +325,7 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         // Move obstacles
         const updatedObstacles = prevObstacles.map(obstacle => {
           // Calculate movement based on deltaTime for smoother motion
-          const moveAmount = (obstacleSpeed * frameTime) / 16; // Normalize to ~60fps
+          const moveAmount = (obstacle.speed * frameTime) / 16; // Use obstacle's individual speed
           const newX = obstacle.x - moveAmount;
           
           // Only check for passing if the obstacle hasn't been passed yet
@@ -399,7 +410,9 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     setPlayer({ y: 150, velocity: 0 });
     setObstacles([]);
     setGameTime(0);
-    lastObstacleRef.current = 0;
+    // Set initial obstacle interval
+    lastObstacleRef.current = MIN_OBSTACLE_INTERVAL + 
+      Math.random() * (MAX_OBSTACLE_INTERVAL - MIN_OBSTACLE_INTERVAL);
     gameStartTimeRef.current = 0;
     firstObstacleGeneratedRef.current = false;
   };
