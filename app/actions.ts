@@ -27,6 +27,7 @@ export async function createGameSession(sessionData: {
 export async function updateGameSession(sessionData: {
   session_id: string;
   score: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   session_log: any[];
   session_end: string;
 }) {

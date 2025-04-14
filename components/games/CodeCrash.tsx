@@ -28,6 +28,7 @@ interface Obstacle {
 type LogEntry = {
   timestamp: number;
   message: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any;
 };
 
@@ -38,9 +39,11 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   const [gameStarted, setGameStarted] = useState(false)
   const [player, setPlayer] = useState<Player>({ y: 150, velocity: 0 })
   const [obstacles, setObstacles] = useState<Obstacle[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [gameTime, setGameTime] = useState(0)
   const [sessionId, setSessionId] = useState<string>('')
   const [previousSession, setPreviousSession] = useState<{ id: string; score: number } | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [sessionLogs, setSessionLogs] = useState<LogEntry[]>([])
   
   const frameRef = useRef<number>()
@@ -122,6 +125,7 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   };
 
   // Add logging function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const logGameEvent = (message: string, data?: any) => {
     const timestamp = getElapsedTime();
     const logEntry: LogEntry = {
