@@ -723,7 +723,6 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
       <div className="text-center mt-4 text-green-300">
         <p>Click or press Space to jump!</p>
         <p>Navigate through the obstacles without crashing.</p>
-        <p className="mt-2 text-xs">Check the browser console for detailed game logs</p>
       </div>
     </ModalWrapper>
   )
