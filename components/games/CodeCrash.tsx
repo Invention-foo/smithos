@@ -23,6 +23,13 @@ interface Obstacle {
   speed: number
 }
 
+// Add these types at the top
+type LogEntry = {
+  timestamp: number;
+  message: string;
+  data?: any;
+};
+
 export function CodeCrash({ onClose }: CodeCrashProps) {
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(0)
@@ -33,6 +40,7 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   const [gameTime, setGameTime] = useState(0)
   const [sessionId, setSessionId] = useState<string>('')
   const [previousSession, setPreviousSession] = useState<{ id: string; score: number } | null>(null)
+  const [sessionLogs, setSessionLogs] = useState<LogEntry[]>([])
   
   const frameRef = useRef<number>()
   const lastObstacleRef = useRef<number>(0)
@@ -112,31 +120,49 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     return Math.random().toString(36).substring(2, 10).toUpperCase();
   };
 
-  // Update handleJump to store previous session when starting new game
+  // Add logging function
+  const logGameEvent = (message: string, data?: any) => {
+    const timestamp = getElapsedTime();
+    const logEntry: LogEntry = {
+      timestamp,
+      message,
+      ...(data && { data })
+    };
+    
+    // Keep existing console.log for now
+    console.log(`[${timestamp}ms] ${message}`, data ? data : '');
+    
+    // Add to structured logs
+    setSessionLogs(prev => [...prev, logEntry]);
+  };
+
+  // Modify handleJump to use the new logging
   const handleJump = () => {
     if (!gameStarted && !gameOver) {
       gameStartTimeRef.current = Date.now();
-      console.log(`[0ms] Game started`);
-      setGameStarted(true);
-      // Generate new session ID when game starts
       const newSessionId = generateSessionId();
       setSessionId(newSessionId);
-      console.log(`[0ms] New game session: ${newSessionId}`);
-      // Update both states
+      setSessionLogs([]); // Clear logs for new session
+      
+      logGameEvent('Game started', { sessionId: newSessionId });
+      setGameStarted(true);
       physicsStateRef.current.velocity = jumpStrength;
       setPlayer(prev => ({
         ...prev,
         velocity: jumpStrength
       }));
     } else if (gameStarted && !gameOver) {
-      // Update both states
+      logGameEvent('Player jumped', {
+        position: physicsStateRef.current.y,
+        newVelocity: jumpStrength
+      });
       physicsStateRef.current.velocity = jumpStrength;
       setPlayer(prev => ({
         ...prev,
         velocity: jumpStrength
       }));
     }
-  }
+  };
 
   // Generate a new obstacle with varied gap positions
   const generateObstacle = (isFirst = false): Obstacle => {
@@ -150,18 +176,21 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     let positionType = "";
     
     if (isFirst) {
-      // First obstacle is always in the middle
       positionType = "Middle";
       gapPosition = (gameAreaHeight - gapHeight) / 2;
       
-      console.log(`[${getElapsedTime()}ms] Generated first obstacle: 
-        - Position: ${positionType} (y=${gapPosition.toFixed(1)})
-        - Gap height: ${gapHeight}
-        - Distance: 500`);
+      logGameEvent('Generated first obstacle', {
+        position: {
+          type: positionType,
+          y: gapPosition
+        },
+        gapHeight,
+        distance: 500
+      });
       
       return {
         id: Date.now(),
-        x: gameAreaWidth + 100, // Start a bit further away
+        x: gameAreaWidth + 100,
         gapPosition,
         gapHeight,
         passed: false,
@@ -220,11 +249,16 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
           secondGapPosition = minGapPos + Math.random() * (gameAreaHeight / 2 - minGapPos);
         }
         
-        console.log(`[${getElapsedTime()}ms] Generated DOUBLE obstacle: 
-          - Position type: ${positionType} (y=${gapPosition.toFixed(1)})
-          - Second gap: ${secondPositionType} (y=${secondGapPosition.toFixed(1)})
-          - Gap height: ${gapHeight}
-          - Score: ${score}`);
+        logGameEvent('Generated double obstacle', {
+          position: {
+            type: positionType,
+            y: gapPosition,
+            secondType: secondPositionType,
+            secondY: secondGapPosition
+          },
+          gapHeight,
+          score
+        });
         
         return {
           id: Date.now(),
@@ -238,10 +272,14 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
           speed: obstacleSpeed + (Math.random() * 0.5) // Add slight speed variation
         };
       } else {
-        console.log(`[${getElapsedTime()}ms] Generated obstacle: 
-          - Position type: ${positionType} (y=${gapPosition.toFixed(1)})
-          - Gap height: ${gapHeight}
-          - Score: ${score}`);
+        logGameEvent('Generated obstacle', {
+          position: {
+            type: positionType,
+            y: gapPosition
+          },
+          gapHeight,
+          score
+        });
         
         return {
           id: Date.now(),
@@ -311,9 +349,10 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
       // Check if it's time to generate a new obstacle
       if (timestamp - lastObstacleTime >= lastObstacleRef.current) {
         const newObstacle = generateObstacle();
-        console.log(`[${getElapsedTime()}ms] Adding new obstacle:
-          - Interval: ${lastObstacleRef.current.toFixed(0)}ms
-          - Current count: ${obstacles.length}`);
+        logGameEvent('Adding new obstacle', {
+          interval: lastObstacleRef.current,
+          count: obstacles.length
+        });
         
         setObstacles(prevObstacles => {
           // Only add new obstacle if we don't have too many
@@ -369,24 +408,44 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
             }
             
             if (collision) {
-              console.log(`[${getElapsedTime()}ms] COLLISION DETECTED
-                Physics vs Visual State:
-                - Physics position: y=${physicsStateRef.current.y.toFixed(1)}
-                - Physics velocity: v=${physicsStateRef.current.velocity.toFixed(1)}
-                - Visual position: y=${player.y.toFixed(1)}
-                - Collision bounds: top=${playerTop.toFixed(1)}, bottom=${playerBottom.toFixed(1)}
-                
-                Obstacle state:
-                - Position: x=${newX.toFixed(1)}
-                - Gap: y=${obstacle.gapPosition.toFixed(1)} to ${(obstacle.gapPosition + obstacle.gapHeight).toFixed(1)}
-                - Type: ${obstacle.type}
-                
-                Time details:
-                - Frame time: ${frameTime.toFixed(1)}ms
-                - Accumulated time: ${accumulator.toFixed(1)}ms
-                
-                Score: ${score}`);
-              // Store current session before game ends
+              // Create the collision log entry
+              const collisionLog: LogEntry = {
+                timestamp: getElapsedTime(),
+                message: 'Collision detected',
+                data: {
+                  player: {
+                    physics: {
+                      y: physicsStateRef.current.y,
+                      velocity: physicsStateRef.current.velocity
+                    },
+                    visual: {
+                      y: player.y,
+                      bounds: { top: playerTop, bottom: playerBottom }
+                    }
+                  },
+                  obstacle: {
+                    x: newX,
+                    gap: {
+                      start: obstacle.gapPosition,
+                      end: obstacle.gapPosition + obstacle.gapHeight
+                    },
+                    type: obstacle.type
+                  },
+                  timing: {
+                    frameTime,
+                    accumulator
+                  },
+                  score
+                }
+              };
+
+              // Update logs and then output the complete log
+              setSessionLogs(prev => {
+                const finalLogs = [...prev, collisionLog];
+                console.log('Full session log:', finalLogs);
+                return finalLogs;
+              });
+              
               if (sessionId) {
                 setPreviousSession({ id: sessionId, score: score });
               }
