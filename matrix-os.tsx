@@ -41,6 +41,7 @@ import { ModalWrapper } from '@/components/modal-wrapper'
 import { CodeRain } from "@/components/games/CodeRain"
 import Clock from "./components/Clock"
 import { Tokenomics } from "./components/tokenomics"
+import { CodeCrash } from "@/components/games/CodeCrash"
 
 
 export default function MatrixOS() {
@@ -147,6 +148,7 @@ function MainOS({
   const [showTokenomics, setShowTokenomics] = useState(false)
   const [showRedPillBluePill, setShowRedPillBluePill] = useState(false)
   const [showCodeRain, setShowCodeRain] = useState(false)
+  const [showCodeCrash, setShowCodeCrash] = useState(false)
   const { isConnected: isWalletConnected, address } = useWallet()
   const startButtonRef = useRef<HTMLButtonElement>(null)
   const programsButtonRef = useRef<HTMLButtonElement>(null)
@@ -166,6 +168,7 @@ function MainOS({
   const handleCloseGame = () => {
     setShowRedPillBluePill(false)
     setShowCodeRain(false)
+    setShowCodeCrash(false)
     setShowGames(false)
   }
 
@@ -390,8 +393,10 @@ function MainOS({
             onClose={() => setShowGames(false)} 
             onOpenRedPillBluePill={() => setShowRedPillBluePill(true)}
             onOpenCodeRain={() => setShowCodeRain(true)}
+            onOpenCodeCrash={() => setShowCodeCrash(true)}
             showRedPillBluePill={showRedPillBluePill}
             showCodeRain={showCodeRain}
+            showCodeCrash={showCodeCrash}
           />
         )}
         {showRedPillBluePill && (
@@ -399,6 +404,9 @@ function MainOS({
         )}
         {showCodeRain && (
           <CodeRain onClose={handleCloseGame} />
+        )}
+        {showCodeCrash && (
+          <CodeCrash onClose={handleCloseGame} />
         )}
         {showTokenomics && <Tokenomics onClose={() => setShowTokenomics(false)} />}
       </div>
@@ -491,17 +499,21 @@ function GamesFolder({
   onClose, 
   onOpenRedPillBluePill,
   onOpenCodeRain,
+  onOpenCodeCrash,
   showRedPillBluePill,
   showCodeRain,
+  showCodeCrash,
 }: { 
   onClose: () => void
   onOpenRedPillBluePill: () => void
   onOpenCodeRain: () => void
+  onOpenCodeCrash: () => void
   showRedPillBluePill: boolean
   showCodeRain: boolean
+  showCodeCrash: boolean
 }) {
   return (
-    <ModalWrapper onClose={showRedPillBluePill || showCodeRain ? () => {} : onClose} className="p-6 rounded-lg w-96">
+    <ModalWrapper onClose={showRedPillBluePill || showCodeRain || showCodeCrash ? () => {} : onClose} className="p-6 rounded-lg w-96">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl text-green-500">Games</h2>
         <button onClick={onClose} className="text-green-500 hover:text-green-400">
@@ -523,7 +535,13 @@ function GamesFolder({
           <Code className="mr-2" />
           Code Rain
         </button>
-        {/* Add more game buttons here in the future */}
+        <button
+          onClick={onOpenCodeCrash}
+          className="w-full bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+        >
+          <Code className="mr-2" />
+          Code Crash
+        </button>
       </div>
     </ModalWrapper>
   )
