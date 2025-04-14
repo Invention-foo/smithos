@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { X } from "lucide-react"
+import { X, Copy } from "lucide-react"
 import { ModalWrapper } from "@/components/modal-wrapper"
 
 interface CodeCrashProps {
@@ -31,6 +31,8 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   const [player, setPlayer] = useState<Player>({ y: 150, velocity: 0 })
   const [obstacles, setObstacles] = useState<Obstacle[]>([])
   const [gameTime, setGameTime] = useState(0)
+  const [sessionId, setSessionId] = useState<string>('')
+  const [previousSession, setPreviousSession] = useState<{ id: string; score: number } | null>(null)
   
   const frameRef = useRef<number>()
   const lastObstacleRef = useRef<number>(0)
@@ -105,12 +107,21 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     }
   }, [gameStarted, gameOver])
 
-  // Update handleJump to modify both React state and physics state
+  // Modify the session ID generation to be 8 characters
+  const generateSessionId = () => {
+    return Math.random().toString(36).substring(2, 10).toUpperCase();
+  };
+
+  // Update handleJump to store previous session when starting new game
   const handleJump = () => {
     if (!gameStarted && !gameOver) {
       gameStartTimeRef.current = Date.now();
       console.log(`[0ms] Game started`);
       setGameStarted(true);
+      // Generate new session ID when game starts
+      const newSessionId = generateSessionId();
+      setSessionId(newSessionId);
+      console.log(`[0ms] New game session: ${newSessionId}`);
       // Update both states
       physicsStateRef.current.velocity = jumpStrength;
       setPlayer(prev => ({
@@ -124,9 +135,6 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         ...prev,
         velocity: jumpStrength
       }));
-    } else if (gameOver) {
-      console.log(`[${getElapsedTime()}ms] Game reset`);
-      resetGame();
     }
   }
 
@@ -378,6 +386,10 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
                 - Accumulated time: ${accumulator.toFixed(1)}ms
                 
                 Score: ${score}`);
+              // Store current session before game ends
+              if (sessionId) {
+                setPreviousSession({ id: sessionId, score: score });
+              }
               setGameOver(true);
             }
           }
@@ -404,6 +416,11 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
   }, [gameStarted, gameOver, score]);
 
   const resetGame = () => {
+    // Keep track of current session before reset
+    if (sessionId) {
+      setPreviousSession({ id: sessionId, score: score });
+    }
+    
     setScore(0);
     setGameOver(false);
     setGameStarted(false);
@@ -467,13 +484,14 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     );
   };
 
-  // Debug function to show obstacle data
-  const debugObstacles = () => {
-    return obstacles.map((o, i) => (
-      <div key={i} className="text-xs">
-        #{i}: x={Math.round(o.x)}, type={o.positionType}, passed={o.passed.toString()}
-      </div>
-    ));
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // Could add toast notification here if you want
+      console.log(`Copied to clipboard: ${text}`);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   return (
@@ -488,14 +506,30 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
       <div className="text-center mb-4">
         <p className="text-green-300 mb-2">Score: {score}</p>
         <p className="text-green-300 mb-2">High Score: {highScore}</p>
-        <p className="text-green-300 mb-2">Time: {Math.floor(gameTime / 1000)}s</p>
-        <p className="text-green-300 mb-2">Obstacles: {obstacles.length}</p>
-        <div className="text-green-300 mb-2 text-xs">
-          <details>
-            <summary>Debug: Obstacle Data</summary>
-            {debugObstacles()}
-          </details>
-        </div>
+        {sessionId && (
+          <div className="flex items-center justify-center gap-2 text-green-300/50 text-xs mb-2">
+            <p>Session ID: {sessionId}</p>
+            <button 
+              onClick={() => copyToClipboard(sessionId)}
+              className="p-1 hover:bg-green-800/30 rounded"
+              title="Copy session ID"
+            >
+              <Copy size={12} />
+            </button>
+          </div>
+        )}
+        {previousSession && (
+          <div className="flex items-center justify-center gap-2 text-green-300/30 text-xs mb-2">
+            <p>Previous Session ID: {previousSession.id} (Score: {previousSession.score})</p>
+            <button 
+              onClick={() => copyToClipboard(previousSession.id)}
+              className="p-1 hover:bg-green-800/30 rounded"
+              title="Copy previous session ID"
+            >
+              <Copy size={12} />
+            </button>
+          </div>
+        )}
       </div>
 
       <div 
