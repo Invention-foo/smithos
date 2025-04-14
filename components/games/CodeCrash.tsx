@@ -270,17 +270,17 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
       
       while (accumulator >= PHYSICS_STEP) {
         // Log the current state before update
-        console.log(`[${getElapsedTime()}ms] Physics update:
-          Previous: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}
-          Time step: ${PHYSICS_STEP}ms`);
+        // console.log(`[${getElapsedTime()}ms] Physics update:
+        //   Previous: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}
+        //   Time step: ${PHYSICS_STEP}ms`);
 
         // Update physics state using the ref
         physicsStateRef.current.velocity = Math.min(MAX_VELOCITY, physicsStateRef.current.velocity + gravity);
         physicsStateRef.current.y = physicsStateRef.current.y + physicsStateRef.current.velocity;
 
         // Log the result after update
-        console.log(`[${getElapsedTime()}ms] After physics:
-          New: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}`);
+        // console.log(`[${getElapsedTime()}ms] After physics:
+        //   New: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}`);
 
         if (physicsStateRef.current.y < 0 || physicsStateRef.current.y + playerSize > gameAreaHeight) {
           console.log(`[${getElapsedTime()}ms] Game over: Player hit boundary at y=${physicsStateRef.current.y}`);
@@ -568,16 +568,16 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         )}
 
         {/* Enhanced debug visualization */}
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+        {/* <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
           {/* Y-axis ruler */}
-          {Array.from({ length: 30 }).map((_, i) => (
+          {/* {Array.from({ length: 30 }).map((_, i) => (
             <div key={`ruler-${i * 10}`} className="relative border-t border-gray-500/20">
               <span className="absolute left-0 text-[8px] text-gray-500/50">{i * 10}px</span>
             </div>
-          ))}
+          ))} */}
           
           {/* Player bounds */}
-          <div 
+          {/* <div 
             className="absolute left-0 w-full border-t border-red-500/50" 
             style={{ top: player.y }}>
             <span className="text-[8px] text-red-500/50">Player top: {Math.round(player.y)}px</span>
@@ -586,10 +586,10 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
             className="absolute left-0 w-full border-t border-red-500/50" 
             style={{ top: player.y + playerSize }}>
             <span className="text-[8px] text-red-500/50">Player bottom: {Math.round(player.y + playerSize)}px</span>
-          </div>
+          </div> */}
           
           {/* Obstacle bounds */}
-          {obstacles.map(obstacle => (
+          {/* {obstacles.map(obstacle => (
             <div key={`debug-${obstacle.id}`}>
               <div 
                 className="absolute left-0 w-full border-t border-blue-500/50" 
@@ -602,8 +602,8 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
                 <span className="text-[8px] text-blue-500/50">Gap bottom: {Math.round(obstacle.gapPosition + obstacle.gapHeight)}px</span>
               </div>
             </div>
-          ))}
-        </div>
+          ))} */}
+        {/* </div> */}
       </div>
 
       <div className="text-center mt-4 text-green-300">
