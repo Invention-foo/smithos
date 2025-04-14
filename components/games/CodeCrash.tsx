@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { X, Copy } from "lucide-react"
 import { ModalWrapper } from "@/components/modal-wrapper"
+import { createGameSession, updateGameSession } from "@/app/actions"
 
 interface CodeCrashProps {
   onClose: () => void
@@ -136,13 +137,20 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
     setSessionLogs(prev => [...prev, logEntry]);
   };
 
-  // Modify handleJump to use the new logging
-  const handleJump = () => {
+  // Modify handleJump to create session
+  const handleJump = async () => {
     if (!gameStarted && !gameOver) {
       gameStartTimeRef.current = Date.now();
       const newSessionId = generateSessionId();
       setSessionId(newSessionId);
       setSessionLogs([]); // Clear logs for new session
+      
+      // Create new session in database
+      await createGameSession({
+        session_id: newSessionId,
+        game_id: 'CODECRASH',
+        session_start: new Date().toISOString()
+      });
       
       logGameEvent('Game started', { sessionId: newSessionId });
       setGameStarted(true);
@@ -442,6 +450,15 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
               // Update logs and then output the complete log
               setSessionLogs(prev => {
                 const finalLogs = [...prev, collisionLog];
+                
+                // Update session in database with final logs
+                updateGameSession({
+                  session_id: sessionId,
+                  score: score,
+                  session_log: finalLogs,
+                  session_end: new Date().toISOString()
+                });
+                
                 console.log('Full session log:', finalLogs);
                 return finalLogs;
               });
