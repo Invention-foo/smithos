@@ -341,6 +341,44 @@ export function CodeCrash({ onClose }: CodeCrashProps) {
         //   New: y=${physicsStateRef.current.y.toFixed(1)}, v=${physicsStateRef.current.velocity.toFixed(1)}`);
 
         if (physicsStateRef.current.y < 0 || physicsStateRef.current.y + playerSize > gameAreaHeight) {
+          // Create boundary collision log
+          const boundaryCollisionLog: LogEntry = {
+            timestamp: getElapsedTime(),
+            message: 'Collision detected',
+            data: {
+              player: {
+                physics: {
+                  y: physicsStateRef.current.y,
+                  velocity: physicsStateRef.current.velocity
+                }
+              },
+              collision: {
+                type: physicsStateRef.current.y < 0 ? 'top_boundary' : 'bottom_boundary'
+              },
+              timing: {
+                frameTime,
+                accumulator
+              },
+              score
+            }
+          };
+
+          // Update logs and session
+          setSessionLogs(prev => {
+            const finalLogs = [...prev, boundaryCollisionLog];
+            
+            // Update session in database with final logs
+            updateGameSession({
+              session_id: sessionId,
+              score: score,
+              session_log: finalLogs,
+              session_end: new Date().toISOString()
+            });
+            
+            console.log('Full session log:', finalLogs);
+            return finalLogs;
+          });
+
           console.log(`[${getElapsedTime()}ms] Game over: Player hit boundary at y=${physicsStateRef.current.y}`);
           setGameOver(true);
           return;
