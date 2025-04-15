@@ -1,3 +1,5 @@
+'use server';
+
 import { supabase } from "@/lib/supabase";
 
 export async function createGameSession(sessionData: {
@@ -13,8 +15,6 @@ export async function createGameSession(sessionData: {
         game_id: sessionData.game_id,
         session_start: sessionData.session_start
       })
-      .select()
-      .single();
 
     if (error) throw error;
     return { data, error: null };
@@ -40,8 +40,6 @@ export async function updateGameSession(sessionData: {
         session_end: sessionData.session_end
       })
       .eq('session_id', sessionData.session_id)
-      .select()
-      .single();
 
     if (error) throw error;
     return { data, error: null };
