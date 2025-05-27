@@ -176,6 +176,10 @@ function MainOS({
     window.open('https://docs.smithos.ai', '_blank');
   };
 
+  const openNeoGuard = () => {
+    window.open('https://neoguard.smithos.ai', '_blank');
+  };
+
   return (
     <div className="bg-black text-green-500 min-h-screen font-mono relative overflow-hidden" style={{ opacity }}>
       <div className="absolute inset-0 matrix-bg"></div>
@@ -195,7 +199,7 @@ function MainOS({
             <DesktopIcon icon={<TerminalIcon />} label="Terminal" onClick={() => setShowTerminal(true)} />
             <DesktopIcon icon={<BarChart2 />} label="Dashboard" onClick={() => setShowDashboard(true)} />
             <DesktopIcon icon={<Code />} label="CodeSeer" onClick={() => setShowCodeSeer(true)} />
-            <DesktopIcon icon={<Shield />} label="NeoGuard" onClick={() => setShowNeoGuard(true)} />
+            <DesktopIcon icon={<Shield />} label="NeoGuard" onClick={openNeoGuard} />
             <DesktopIcon icon={<Search />} label="NeuralScan" onClick={() => setShowNeuralScan(true)} />
           </div>
 
@@ -293,7 +297,7 @@ function MainOS({
                       <button
                         className="w-full text-left px-4 py-2 text-green-100 hover:bg-green-700"
                         onClick={() => {
-                          setShowNeoGuard(true);
+                          openNeoGuard();
                           setShowStartMenu(false);
                         }}
                       >
@@ -387,7 +391,6 @@ function MainOS({
         {showDashboard && <Dashboard onClose={() => setShowDashboard(false)} />}
         {showNeuralScan && <NeuralScan onClose={() => setShowNeuralScan(false)} />}
         {showCodeSeer && <CodeSeer onClose={() => setShowCodeSeer(false)} />}
-        {showNeoGuard && <NeoGuard onClose={() => setShowNeoGuard(false)} />}
         {showGames && (
           <GamesFolder 
             onClose={() => setShowGames(false)} 

@@ -17,11 +17,10 @@
     {
       "version": "0.2.0",
       "title": "MVP",
-      "status": "Planned",
-      "date": "May 2025",
+      "status": "In Progress",
+      "date": "Q2 2025",
       "features": [
-        { "text": "[SmithOS] Terminal v1", "completed": false },
-        { "text": "[SmithOS] NeoGuard", "completed": false },
+        { "text": "[SmithOS] NeoGuard", "completed": true },
         { "text": "[Agent Smith] Spam/scam Detection", "completed": false },
         { "text": "[Agent Smith] Transaction Simulation", "completed": false },
         { "text": "[Agent Smith] Website Scanner", "completed": false },
@@ -34,11 +33,13 @@
       "status": "Future",
       "date": "Q3 2025",
       "features": [
+        { "text": "[SmithOS] Terminal v1", "completed": false },
         { "text": "[SmithOS] NeuralScan", "completed": false },
         { "text": "[Agent Smith] On-Chain Transaction Analysis", "completed": false },
         { "text": "[Agent Smith] Project Analysis", "completed": false },
         { "text": "[Agent Smith] Expanded Code Analysis", "completed": false },
-        { "text": "[Agent Smith] Autonomous General Project Scanning", "completed": false }
+        { "text": "[Agent Smith] Autonomous General Project Scanning", "completed": false },
+        { "text": "[Agent Smith] Autonomous Technical Security Scanning", "completed": false }
       ]
     },
     {
