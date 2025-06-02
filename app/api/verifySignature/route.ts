@@ -74,6 +74,7 @@ export async function POST(request: Request) {
 }
 
 // Handle OPTIONS preflight request
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function OPTIONS(request: Request) {
   return new NextResponse(null, {
     status: 200,
